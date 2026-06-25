@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,17 +32,18 @@ const PRIORITY_DOT: Record<TaskPriority, string> = {
 export function KanbanBoard({
   applicationId,
   initialTasks,
+  initialTaskId,
   epics = [],
   doingWipLimit = 3,
   workflowType = "kanban",
 }: {
   applicationId: string;
   initialTasks: Task[];
+  initialTaskId?: string;
   epics?: Epic[];
   doingWipLimit?: number;
   workflowType?: "kanban" | "scrum";
 }) {
-  const router = useRouter();
   const [tasks, setTasks] = useState(initialTasks);
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,6 +51,19 @@ export function KanbanBoard({
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [dragTaskId, setDragTaskId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
+
+  useEffect(() => {
+    if (!initialTaskId) return;
+    const task = initialTasks.find((t) => t.id === initialTaskId);
+    if (task) {
+      setSelectedTask(task);
+      setSheetOpen(true);
+    }
+  }, [initialTaskId, initialTasks]);
 
   const doingCount = tasks.filter((t) => t.status === "doing" && !t.isClosed).length;
   const wipExceeded = doingCount > doingWipLimit;
@@ -82,7 +95,6 @@ export function KanbanBoard({
         const task = await res.json();
         setTasks([...tasks, task]);
         setTitle("");
-        router.refresh();
       }
     } finally {
       setLoading(false);
@@ -104,7 +116,6 @@ export function KanbanBoard({
     if (res.ok) {
       const updated = await res.json();
       setTasks(tasks.map((t) => (t.id === taskId ? updated : t)));
-      router.refresh();
     }
   }
 

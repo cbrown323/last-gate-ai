@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { ExternalLink, GitBranch, GitCommit, Pin } from "lucide-react";
+import { ExternalLink, GitBranch, GitCommit, Kanban, Pin } from "lucide-react";
 
 import { GlassCard } from "@/components/ui/glass-card";
 import { StatusBadge, StackChip } from "@/components/ui/intelligence-badges";
 import { ApplicationPinButton } from "@/components/applications/application-pin-button";
 import type { Application } from "@/types";
 import { LIFECYCLE_PHASE_LABELS } from "@/types";
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 export function ApplicationCard({ application }: { application: Application }) {
   const repoPath = application.repoUrl?.replace("https://github.com/", "");
@@ -25,7 +27,19 @@ export function ApplicationCard({ application }: { application: Application }) {
 
   return (
     <GlassCard hover className="group/app-card h-full">
-      <div className="absolute top-2.5 right-2.5 z-10">
+      <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1">
+        {(taskCount ?? 0) > 0 ? (
+          <Link
+            href={`/applications/${application.id}/tasks`}
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "icon-sm" }),
+              "text-muted-foreground hover:text-foreground size-7"
+            )}
+            title="Open task board"
+          >
+            <Kanban className="size-3.5" />
+          </Link>
+        ) : null}
         <ApplicationPinButton
           applicationId={application.id}
           isPinned={application.isPinned}

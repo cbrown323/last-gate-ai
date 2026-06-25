@@ -44,10 +44,10 @@ last-gate-ai/
 ├── .cursor/rules/
 ├── app/
 │   ├── layout.tsx
-│   ├── page.tsx              # → redirect /dashboard
 │   ├── (dashboard)/
 │   │   ├── layout.tsx        # Sidebar shell
-│   │   ├── dashboard/page.tsx
+│   │   ├── page.tsx          # Portfolio dashboard at /
+│   │   ├── dashboard/page.tsx # → redirect /
 │   │   ├── applications/
 │   │   │   ├── page.tsx
 │   │   │   └── [id]/
@@ -85,7 +85,7 @@ Figma MCP required authentication during bootstrap; web fetch to the Make file t
 
 | Figma screen (Make file) | Next route | Status |
 |--------------------------|------------|--------|
-| Dashboard / Home | `/dashboard` | Implemented — extended with portfolio widgets |
+| Dashboard / Home | `/` | Implemented — lifecycle board + portfolio widgets |
 | Projects / Apps list | `/applications` | Implemented — registry CRUD |
 | Project detail | `/applications/[id]` | Implemented — tabs: Overview, Git, Summary |
 | Kanban | `/applications/[id]/tasks` | Implemented — 4-column board |
@@ -122,7 +122,7 @@ Figma MCP required authentication during bootstrap; web fetch to the Make file t
 - [x] Headroom optimization agent
 - [x] Deployment tracking (file detection + manual log)
 
-## Phase 4 — Automation (in progress)
+## Phase 4 — Automation (done)
 
 - [x] `IntelligenceJob` model — persisted pipeline runs
 - [x] Server-side orchestrator — `lib/applications/run-intelligence-pipeline.ts`
@@ -130,8 +130,17 @@ Figma MCP required authentication during bootstrap; web fetch to the Make file t
 - [x] UI polling — guided analysis uses server jobs
 - [x] Portfolio refresh — dashboard button + `POST /api/intelligence/portfolio-refresh`
 - [x] Weekly cron — `vercel.json` → `/api/cron/portfolio-refresh` (stale apps, 7-day threshold)
-- [ ] Parallel step execution (security + headroom after stack scan)
-- [ ] Durable job queue beyond Vercel function limits (Redis/Inngest)
+- [x] Parallel step execution (security + headroom after stack scan)
+- [ ] Durable job queue beyond Vercel function limits (Redis/Inngest) — deferred
+
+## Phase 4.5 — UX polish (done)
+
+- [x] Dashboard at `/` — removed redirect-only root page; `/dashboard` redirects for compatibility
+- [x] Turbopack stability — removed broken `turbopack.root` override that caused `/` compile panics
+- [x] PM Board/Roadmap switcher — `PmViewSwitcher` on app detail, tasks, and roadmap pages
+- [x] Task deep links — `?task=<id>` from search, overdue widgets; Kanban opens task sheet
+- [x] Kanban shortcuts — board icon on application cards; lifecycle tiles link to tasks when open
+- [x] Intelligence polling — no `router.refresh()` on every poll tick (refresh on job complete only)
 
 ## Deferred (Phase 5+)
 
@@ -172,4 +181,4 @@ Figma MCP required authentication during bootstrap; web fetch to the Make file t
 
 ---
 
-**Last updated:** 2026-06-24
+**Last updated:** 2026-06-25

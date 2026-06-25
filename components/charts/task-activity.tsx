@@ -22,7 +22,7 @@ export function OverdueTasksCard({ stats }: { stats: TaskPortfolioStats }) {
           stats.overdue.map((task) => (
             <Link
               key={task.id}
-              href={`/applications/${task.applicationId}/tasks`}
+              href={`/applications/${task.applicationId}/tasks?task=${task.id}`}
               className="hover:bg-muted/50 flex items-center justify-between rounded-md border p-2 text-sm"
             >
               <div className="min-w-0">

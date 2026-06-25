@@ -46,6 +46,20 @@
 - Cron protected by `CRON_SECRET`; dev allows unauthenticated cron when secret unset
 
 **Follow-ups:**
-- Parallel security + headroom steps after stack scan
-- Durable queue if Vercel timeout becomes a bottleneck
+- Durable queue if Vercel timeout becomes a bottleneck (deferred to Phase 5+)
 - Mark remaining UI debt items (health score, cost rollup, etc.)
+
+## 2026-06-25 — Phase 4.5 UX polish
+
+**Agent:** Cursor (Phase 4.5 completion)
+
+**Completed:**
+- Dashboard served at `/`; `/dashboard` redirects for backwards compatibility
+- Removed broken Turbopack `root` config causing `/` compile panics and reload loops
+- `PmViewSwitcher` component for Board/Roadmap navigation on app detail, tasks, roadmap
+- Task deep links via `?task=<id>` (search API, overdue widget, Kanban auto-open sheet)
+- Kanban shortcut on application cards; lifecycle board tiles link to tasks when open
+- Security + headroom pipeline steps run in parallel (`EXECUTION_GROUPS` in orchestrator)
+- Stopped `router.refresh()` on every intelligence poll tick in `application-detail-shell`
+
+**Verified:** `npm run build` passes; dev `/` serves 200 without Turbopack FATAL panics; `/dashboard` → 307 `/`

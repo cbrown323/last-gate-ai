@@ -10,6 +10,7 @@ import {
   BookOpen,
   CalendarDays,
   FileText,
+  Compass,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -23,15 +24,29 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
 
 const navMain = [
-  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { title: "Dashboard", href: "/", icon: LayoutDashboard },
   { title: "Applications", href: "/applications", icon: Boxes },
   { title: "Calendar", href: "/calendar", icon: CalendarDays },
   { title: "Notes", href: "/notes", icon: FileText },
+];
+
+const navDocumentation = [
   { title: "PM Playbook", href: "/playbook", icon: BookOpen },
+];
+
+const docSubcategories: NavSubcategory[] = [
+  {
+    title: "Solo Operator",
+    icon: Compass,
+    items: [{ title: "Workflow Guide", href: "/docs/solo-operator" }],
+  },
 ];
 
 const navSecondary = [
@@ -44,8 +59,21 @@ type NavItem = {
   icon: LucideIcon;
 };
 
+type NavSubcategory = {
+  title: string;
+  icon: LucideIcon;
+  items: { title: string; href: string }[];
+};
+
 const navButtonClass =
   "relative h-11 gap-3 rounded-lg px-3 text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-foreground data-[active=true]:bg-primary/10 data-[active=true]:text-primary [&_svg]:size-[18px]";
+
+function isNavItemActive(pathname: string, href: string): boolean {
+  if (href === "/") {
+    return pathname === "/" || pathname === "/dashboard";
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 function NavMenu({
   items,
@@ -89,13 +117,59 @@ function NavMenu({
   );
 }
 
+function NavSubcategories({
+  subcategories,
+  isActive,
+}: {
+  subcategories: NavSubcategory[];
+  isActive: (href: string) => boolean;
+}) {
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  return (
+    <SidebarMenu className="gap-0.5">
+      {subcategories.map((sub) => (
+        <SidebarMenuItem key={sub.title}>
+          <div className="text-muted-foreground/80 flex items-center gap-2 px-3 pt-2 pb-1 text-[11px] font-medium tracking-wide uppercase">
+            <sub.icon className="size-3.5" />
+            <span>{sub.title}</span>
+          </div>
+          <SidebarMenuSub>
+            {sub.items.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <SidebarMenuSubItem key={item.href}>
+                  <SidebarMenuSubButton
+                    isActive={active}
+                    className="text-muted-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10 h-8"
+                    render={
+                      <Link
+                        href={item.href}
+                        onClick={() => {
+                          if (isMobile) setOpenMobile(false);
+                        }}
+                      />
+                    }
+                  >
+                    <span>{item.title}</span>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              );
+            })}
+          </SidebarMenuSub>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  );
+}
+
 export function AppSidebar() {
   const pathname = usePathname();
 
   return (
     <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border">
       <SidebarHeader className="gap-2 border-b border-sidebar-border p-4">
-        <Link href="/dashboard" className="flex items-center gap-2.5 font-semibold">
+        <Link href="/" className="flex items-center gap-2.5 font-semibold">
           <div
             className="flex size-8 shrink-0 items-center justify-center rounded-lg text-white"
             style={{
@@ -121,7 +195,19 @@ export function AppSidebar() {
             Portfolio
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <NavMenu items={navMain} isActive={(href) => pathname.startsWith(href)} />
+            <NavMenu items={navMain} isActive={(href) => isNavItemActive(pathname, href)} />
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup className="px-1 py-2">
+          <SidebarGroupLabel className="mb-1 h-6 px-2 text-[11px] tracking-wide uppercase">
+            Documentation
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <NavMenu items={navDocumentation} isActive={(href) => isNavItemActive(pathname, href)} />
+            <NavSubcategories
+              subcategories={docSubcategories}
+              isActive={(href) => isNavItemActive(pathname, href)}
+            />
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup className="px-1 py-2">
@@ -129,7 +215,7 @@ export function AppSidebar() {
             System
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <NavMenu items={navSecondary} isActive={(href) => pathname === href} />
+            <NavMenu items={navSecondary} isActive={(href) => isNavItemActive(pathname, href)} />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

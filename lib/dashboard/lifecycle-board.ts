@@ -280,7 +280,10 @@ export function buildLifecycleBoardData({
             : openTasks > 0
               ? "Open tasks"
               : "View application",
-        href: `/applications/${app.id}`,
+        href:
+          openTasks > 0
+            ? `/applications/${app.id}/tasks`
+            : `/applications/${app.id}`,
         applicationId: app.id,
         weight,
         accent: alert?.isOverdue ? "danger" : app.isPinned ? "warning" : "default",

@@ -96,7 +96,7 @@ export async function GET(request: Request) {
       type: "task",
       title: t.title,
       subtitle: t.application?.name ?? null,
-      href: `/applications/${t.applicationId}/tasks`,
+      href: `/applications/${t.applicationId}/tasks?task=${t.id}`,
       badge: t.code ?? t.status,
     })),
     ...notes.map<SearchResultItem>((n) => ({

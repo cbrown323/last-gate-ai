@@ -18,11 +18,10 @@ import { getCalendarItems } from "@/lib/calendar/queries";
 import { serializeApplication } from "@/lib/serialize";
 import type { ApplicationStatus } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
 import { ApplicationDetailShell } from "@/components/applications/application-detail-shell";
+import { PmViewSwitcher } from "@/components/applications/pm-view-switcher";
 import { buildIntelligenceProgress } from "@/lib/applications/intelligence-workflow";
-import { Kanban, ExternalLink, Map } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { DemoPreviewBadge } from "@/components/demo/demo-preview-badge";
 import { isDemoApplication } from "@/lib/demo/load-preview";
 import { LifecycleBanner } from "@/components/applications/lifecycle-banner";
@@ -98,20 +97,7 @@ export default async function ApplicationDetailPage({
               showLabel
             />
             <ApplicationEditDialog application={serialized} />
-            <Link
-              href={`/applications/${id}/roadmap`}
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-            >
-              <Map className="mr-1 size-4" />
-              Roadmap
-            </Link>
-            <Link
-              href={`/applications/${id}/tasks`}
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-            >
-              <Kanban className="mr-1 size-4" />
-              Tasks
-            </Link>
+            <PmViewSwitcher applicationId={id} />
           </div>
         }
       />

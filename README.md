@@ -22,7 +22,7 @@ npm run db:seed
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) → redirects to `/dashboard`.
+Open [http://localhost:3000](http://localhost:3000) for the portfolio dashboard (`/dashboard` redirects to `/`).
 
 ### Connect integrations (recommended)
 
@@ -113,3 +113,11 @@ curl http://localhost:3000/api/intelligence/jobs/<JOB_ID>
 # Manual cron trigger (dev: no CRON_SECRET required)
 curl -X POST http://localhost:3000/api/cron/portfolio-refresh
 ```
+
+## Phase 4.5 — UX polish
+
+- **Dashboard at `/`** — sidebar and logo link home; `/dashboard` redirects for old bookmarks
+- **Board | Roadmap switcher** — on app detail, tasks, and roadmap pages (top right)
+- **Task deep links** — search and overdue tasks open `/applications/[id]/tasks?task=[taskId]`
+- **Kanban shortcuts** — board icon on application cards; lifecycle tiles with open tasks go to the board
+- **Stable dev server** — removed Turbopack root override that caused home-page reload loops

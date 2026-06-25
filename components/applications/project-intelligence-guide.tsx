@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -286,11 +285,7 @@ export function ProjectIntelligenceGuide({
 
         {analysisComplete && !running ? (
           <p className="text-muted-foreground text-xs">
-            Analysis complete. Browse each tab for details, or use{" "}
-            <Link href="/playbook" className="text-emerald-600 hover:underline">
-              Playbook
-            </Link>{" "}
-            for product lifecycle next steps.
+            Analysis complete. Browse each tab for details.
           </p>
         ) : null}
       </CardContent>

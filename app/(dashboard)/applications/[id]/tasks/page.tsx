@@ -7,15 +7,19 @@ import { LifecycleBanner } from "@/components/applications/lifecycle-banner";
 import { serializeEpic, serializeTask } from "@/lib/serialize";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { ArrowLeft, Map, BookOpen } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { PmViewSwitcher } from "@/components/applications/pm-view-switcher";
 import type { LifecyclePhase, WorkflowType } from "@/types";
 
 export default async function ApplicationTasksPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ task?: string }>;
 }) {
   const { id } = await params;
+  const { task: initialTaskId } = await searchParams;
   const application = await prisma.application.findUnique({
     where: { id },
     include: {
@@ -36,21 +40,11 @@ export default async function ApplicationTasksPage({
         title={`${application.name} — Tasks`}
         description="Kanban board with WIP limits, priorities, and task details"
         actions={
-          <div className="flex gap-2">
-            <Link href="/playbook" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
-              <BookOpen className="mr-1 size-4" />
-              Playbook
-            </Link>
-            <Link
-              href={`/applications/${id}/roadmap`}
-              className={cn(buttonVariants({ variant: "outline" }))}
-            >
-              <Map className="mr-1 size-4" />
-              Roadmap
-            </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <PmViewSwitcher applicationId={id} view="tasks" />
             <Link
               href={`/applications/${id}`}
-              className={cn(buttonVariants({ variant: "outline" }))}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
             >
               <ArrowLeft className="mr-1 size-4" />
               App detail
@@ -69,6 +63,7 @@ export default async function ApplicationTasksPage({
       <KanbanBoard
         applicationId={id}
         initialTasks={application.tasks.map(serializeTask)}
+        initialTaskId={initialTaskId}
         epics={application.epics.map(serializeEpic)}
         doingWipLimit={application.doingWipLimit}
         workflowType={application.workflowType as WorkflowType}

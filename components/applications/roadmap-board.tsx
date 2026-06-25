@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,8 +34,12 @@ export function RoadmapBoard({
   applicationId: string;
   initialEpics: Epic[];
 }) {
-  const router = useRouter();
   const [epics, setEpics] = useState(initialEpics);
+
+  useEffect(() => {
+    setEpics(initialEpics);
+  }, [initialEpics]);
+
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -82,7 +85,6 @@ export function RoadmapBoard({
       setEpics([...epics, epic]);
       setForm({ name: "", description: "", startsAt: "", endsAt: "" });
       setOpen(false);
-      router.refresh();
     }
   }
 
@@ -90,7 +92,6 @@ export function RoadmapBoard({
     const res = await fetch(`/api/epics/${id}`, { method: "DELETE" });
     if (res.ok) {
       setEpics(epics.filter((e) => e.id !== id));
-      router.refresh();
     }
   }
 

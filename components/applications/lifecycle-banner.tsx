@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BookOpen, ChevronRight, Lightbulb, Timer } from "lucide-react";
+import { ChevronRight, Lightbulb, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function LifecycleBanner({
@@ -60,15 +59,7 @@ export function LifecycleBanner({
             <Lightbulb className="size-4 text-emerald-600" />
             Product lifecycle — {LIFECYCLE_PHASE_LABELS[lifecyclePhase]}
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline">{WORKFLOW_TYPE_LABELS[workflowType]} workflow</Badge>
-            <Link href="/playbook">
-              <Button variant="ghost" size="sm">
-                <BookOpen className="mr-1 size-4" />
-                Playbook
-              </Button>
-            </Link>
-          </div>
+          <Badge variant="outline">{WORKFLOW_TYPE_LABELS[workflowType]} workflow</Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

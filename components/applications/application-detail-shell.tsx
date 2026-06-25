@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ApplicationDetailProvider } from "@/components/applications/application-detail-context";
 import { ApplicationAdvancedPanel } from "@/components/applications/application-advanced-panel";
 import { ApplicationIntelligenceSection } from "@/components/applications/application-intelligence-section";
@@ -58,7 +57,6 @@ export function ApplicationDetailShell({
   headroomReport: HeadroomReportResult | null;
   deployments: DeploymentRecord[];
 }) {
-  const router = useRouter();
   const [tab, setTab] = useState<ApplicationTabValue>("overview");
   const [intelligenceTab, setIntelligenceTab] = useState<IntelligenceTabValue>("stack");
   const [progress, setProgress] = useState<IntelligenceProgress>(initialProgress);
@@ -73,13 +71,9 @@ export function ApplicationDetailShell({
     }
   }, [initialProgress, running]);
 
-  const onProgressChange = useCallback(
-    (next: IntelligenceProgress) => {
-      setProgress(next);
-      router.refresh();
-    },
-    [router]
-  );
+  const onProgressChange = useCallback((next: IntelligenceProgress) => {
+    setProgress(next);
+  }, []);
 
   const onStepTab = useCallback((stepTab: IntelligenceTabValue) => {
     setTab("intelligence");

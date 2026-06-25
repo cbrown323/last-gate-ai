@@ -5,11 +5,20 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  SettingsCategoryBadge,
+  settingsCategoryCardClass,
+  SettingsFeaturePill,
+  type SettingsCategory,
+} from "@/components/settings/settings-category";
+import { SettingsDocumentationCard } from "@/components/settings/settings-documentation-card";
+import { SettingsExpandableDetails } from "@/components/settings/settings-expandable-details";
 import type {
   IntegrationConnectionState,
   IntegrationProviderDefinition,
   IntegrationProviderStatus,
 } from "@/types/integrations";
+import { cn } from "@/lib/utils";
 import {
   CheckCircle2,
   Circle,
@@ -29,20 +38,24 @@ type OverviewResponse = {
   coreReady: boolean;
 };
 
+function isIntegrationReady(state: IntegrationConnectionState) {
+  return state === "verified" || state === "configured";
+}
+
 function stateBadge(state: IntegrationConnectionState) {
   switch (state) {
     case "verified":
       return (
-        <Badge className="bg-emerald-600 hover:bg-emerald-600">
+        <Badge className="border-emerald-200/60 bg-emerald-100/80 text-emerald-800 hover:bg-emerald-100/80 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-200">
           <CheckCircle2 className="mr-1 size-3" />
-          Connected
+          All set
         </Badge>
       );
     case "configured":
       return (
-        <Badge variant="secondary">
-          <Circle className="mr-1 size-3" />
-          Configured
+        <Badge className="border-emerald-200/60 bg-emerald-100/80 text-emerald-800 hover:bg-emerald-100/80 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-200">
+          <CheckCircle2 className="mr-1 size-3" />
+          Ready
         </Badge>
       );
     case "error":
@@ -73,118 +86,152 @@ function IntegrationStepCard({
   onVerify: (id: string) => void;
   verifying: boolean;
 }) {
+  const category: SettingsCategory = provider.optional ? "optional" : "recommended";
+  const ready = isIntegrationReady(provider.state);
+
   return (
-    <Card className="shadow-sm">
+    <Card
+      className={cn(
+        settingsCategoryCardClass(category, { completed: ready }),
+        ready && "border-l-2 border-l-emerald-500/35"
+      )}
+    >
       <CardHeader className="pb-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-muted-foreground flex size-6 items-center justify-center rounded-full border text-xs font-medium">
-                {stepNumber}
+              <span
+                className={cn(
+                  "flex size-6 items-center justify-center rounded-full border text-xs font-medium",
+                  ready
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                    : "text-muted-foreground"
+                )}
+              >
+                {ready ? <CheckCircle2 className="size-3.5" /> : stepNumber}
               </span>
-              <CardTitle className="text-base">{provider.name}</CardTitle>
-              {provider.optional ? (
-                <Badge variant="outline" className="text-xs">
-                  Optional
-                </Badge>
-              ) : (
-                <Badge variant="secondary" className="text-xs">
-                  Recommended
-                </Badge>
-              )}
+              <CardTitle className={cn("text-base", ready && "text-muted-foreground")}>
+                {provider.name}
+              </CardTitle>
+              {!ready ? <SettingsCategoryBadge category={category} /> : null}
             </div>
-            <p className="text-muted-foreground text-sm">{provider.description}</p>
+            {ready ? (
+              <p className="text-muted-foreground text-sm">
+                {provider.state === "verified" && provider.accountLabel
+                  ? `Connected as ${provider.accountLabel} — no further setup needed.`
+                  : provider.state === "verified"
+                    ? "Verified and working — no further setup needed."
+                    : "Environment configured — you're good to go."}
+              </p>
+            ) : (
+              <p className="text-muted-foreground text-sm">{provider.description}</p>
+            )}
           </div>
           {stateBadge(provider.state)}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex flex-wrap gap-1">
-          {provider.features.map((f) => (
-            <Badge key={f} variant="outline" className="text-xs font-normal">
-              {f}
-            </Badge>
-          ))}
-        </div>
+      <CardContent className={cn("space-y-4", ready && "pt-0")}>
+        <SettingsExpandableDetails
+          label={ready ? "View setup details" : "Setup instructions"}
+          header={
+            <div className={cn("flex flex-wrap gap-1", ready && "opacity-75")}>
+              {provider.features.map((f) => (
+                <SettingsFeaturePill key={f} category={category}>
+                  {f}
+                </SettingsFeaturePill>
+              ))}
+            </div>
+          }
+        >
+          {provider.accountLabel ? (
+            <p className="text-sm">
+              Account:{" "}
+              <code className="rounded bg-muted px-1">{provider.accountLabel}</code>
+            </p>
+          ) : null}
 
-        {provider.accountLabel ? (
-          <p className="text-sm">
-            Account:{" "}
-            <code className="rounded bg-muted px-1">{provider.accountLabel}</code>
-          </p>
-        ) : null}
-
-        {provider.message ? (
-          <p
-            className={
-              provider.state === "error"
-                ? "text-destructive text-sm"
-                : "text-muted-foreground text-sm"
-            }
-          >
-            {provider.message}
-          </p>
-        ) : null}
-
-        <ol className="space-y-3 text-sm">
-          {provider.setupSteps.map((step, i) => (
-            <li key={i} className="flex gap-3">
-              <span className="text-muted-foreground mt-0.5 shrink-0 font-mono text-xs">
-                {i + 1}.
-              </span>
-              <div className="space-y-1">
-                <p className="font-medium">{step.title}</p>
-                <p className="text-muted-foreground">{step.description}</p>
-                {step.link ? (
-                  <a
-                    href={step.link.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-emerald-600 text-xs hover:underline"
-                  >
-                    {step.link.label}
-                    <ExternalLink className="size-3" />
-                  </a>
-                ) : null}
-              </div>
-            </li>
-          ))}
-        </ol>
-
-        <div className="flex flex-wrap items-center gap-2 border-t pt-3">
-          <p className="text-muted-foreground text-xs">
-            Env:{" "}
-            {provider.envVars.map((v) => (
-              <code key={v} className="mr-1 rounded bg-muted px-1">
-                {v}
-              </code>
-            ))}
-          </p>
-          <div className="ml-auto flex gap-2">
-            <a
-              href={provider.docsUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="text-muted-foreground inline-flex items-center gap-1 text-xs hover:text-foreground"
+          {provider.message ? (
+            <p
+              className={
+                provider.state === "error"
+                  ? "text-destructive text-sm"
+                  : "text-muted-foreground text-sm"
+              }
             >
-              Docs
-              <ExternalLink className="size-3" />
-            </a>
+              {provider.message}
+            </p>
+          ) : null}
+
+          <ol className="space-y-3 text-sm">
+            {provider.setupSteps.map((step, i) => (
+              <li key={i} className="flex gap-3">
+                <span className="text-muted-foreground mt-0.5 shrink-0 font-mono text-xs">
+                  {i + 1}.
+                </span>
+                <div className="space-y-1">
+                  <p className="font-medium">{step.title}</p>
+                  <p className="text-muted-foreground">{step.description}</p>
+                  {step.link ? (
+                    <a
+                      href={step.link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-emerald-600 text-xs hover:underline"
+                    >
+                      {step.link.label}
+                      <ExternalLink className="size-3" />
+                    </a>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </SettingsExpandableDetails>
+
+        <div
+          className={cn(
+            "flex flex-wrap items-center gap-2 border-t pt-3",
+            ready && "border-border/40"
+          )}
+        >
+          {!ready ? (
+            <p className="text-muted-foreground text-xs">
+              Env:{" "}
+              {provider.envVars.map((v) => (
+                <code key={v} className="mr-1 rounded bg-muted px-1">
+                  {v}
+                </code>
+              ))}
+            </p>
+          ) : null}
+          <div className={cn("ml-auto flex gap-2", ready && "w-full justify-end")}>
+            {!ready ? (
+              <a
+                href={provider.docsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-muted-foreground inline-flex items-center gap-1 text-xs hover:text-foreground"
+              >
+                Docs
+                <ExternalLink className="size-3" />
+              </a>
+            ) : null}
             <Button
               size="sm"
-              variant="outline"
+              variant={ready ? "ghost" : "outline"}
               onClick={() => onVerify(provider.id)}
               disabled={verifying}
+              className={ready ? "text-muted-foreground h-7 text-xs" : undefined}
             >
               {verifying ? (
                 <>
                   <Loader2 className="mr-1 size-4 animate-spin" />
-                  Verifying…
+                  Checking…
                 </>
               ) : (
                 <>
                   <RefreshCw className="mr-1 size-4" />
-                  Verify
+                  {ready ? "Re-check" : "Verify"}
                 </>
               )}
             </Button>
@@ -337,24 +384,19 @@ export function IntegrationsWizard() {
         />
       ))}
 
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base">After connecting</CardTitle>
-        </CardHeader>
-        <CardContent className="text-muted-foreground space-y-2 text-sm">
-          <ol className="list-inside list-decimal space-y-1">
-            <li>
-              <Link href="/applications" className="text-emerald-600 underline">
-                Register an application
-              </Link>{" "}
-              with your GitHub repo URL
-            </li>
-            <li>Overview tab → Sync now for live git stats</li>
-            <li>Stack tab → Scan repo · Architecture tab → Map architecture</li>
-            <li>Deployments tab → Detect from repo (finds vercel.json, railway.toml, etc.)</li>
-          </ol>
-        </CardContent>
-      </Card>
+      <SettingsDocumentationCard title="After connecting" expandLabel="Next steps">
+        <ol className="list-inside list-decimal space-y-1">
+          <li>
+            <Link href="/applications" className="text-emerald-600 underline">
+              Register an application
+            </Link>{" "}
+            with your GitHub repo URL
+          </li>
+          <li>Overview tab → Sync now for live git stats</li>
+          <li>Stack tab → Scan repo · Architecture tab → Map architecture</li>
+          <li>Deployments tab → Detect from repo (finds vercel.json, railway.toml, etc.)</li>
+        </ol>
+      </SettingsDocumentationCard>
     </div>
   );
 }

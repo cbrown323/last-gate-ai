@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/db";
 import type { LifecyclePhase } from "@/types";
 import {
@@ -50,7 +51,7 @@ function computeTrend(current7: number, previous7: number): VelocityTrend {
   return "steady";
 }
 
-export async function getVelocityEffortStats(): Promise<VelocityEffortStats> {
+export const getVelocityEffortStats = cache(async (): Promise<VelocityEffortStats> => {
   const now = Date.now();
   const since7 = new Date(now - MS_7D);
   const since30 = new Date(now - MS_30D);
@@ -208,4 +209,4 @@ export async function getVelocityEffortStats(): Promise<VelocityEffortStats> {
     lifecycleAlerts,
     measurementNote: VELOCITY_EFFORT_MEASUREMENT_NOTE,
   };
-}
+});

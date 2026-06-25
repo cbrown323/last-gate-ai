@@ -30,6 +30,16 @@ const STEP_RUNNERS: Record<IntelligenceStepId, StepRunner> = {
   deployments: (applicationId) => detectDeployments(applicationId),
 };
 
+/** Sequential groups; inner arrays run in parallel after prior groups finish. */
+const EXECUTION_GROUPS: IntelligenceStepId[][] = [
+  ["git"],
+  ["stack"],
+  ["architecture"],
+  ["summary"],
+  ["security", "headroom"],
+  ["deployments"],
+];
+
 export type RunIntelligencePipelineOptions = {
   fromBeginning?: boolean;
   steps?: IntelligenceStepId[];
@@ -134,43 +144,66 @@ export async function runIntelligencePipeline(
   });
 
   try {
-    for (const step of INTELLIGENCE_STEPS) {
-      const decision = shouldRunStep(step.id, options, progress, application.repoUrl);
+    for (const group of EXECUTION_GROUPS) {
+      const runnable: IntelligenceStepId[] = [];
+      const skipped: IntelligenceStepResult[] = [];
 
-      if (decision === "skip-no-repo") {
-        const result: IntelligenceStepResult = {
-          stepId: step.id,
-          status: "skipped",
-          durationMs: 0,
-        };
-        stepResults.push(result);
+      for (const stepId of group) {
+        const step = INTELLIGENCE_STEPS.find((s) => s.id === stepId);
+        if (!step) continue;
+
+        const decision = shouldRunStep(stepId, options, progress, application.repoUrl);
+
+        if (decision === "skip-no-repo") {
+          skipped.push({
+            stepId,
+            status: "skipped",
+            durationMs: 0,
+          });
+          continue;
+        }
+
+        if (decision === "skip-complete" || decision === "skip-filter") {
+          continue;
+        }
+
+        runnable.push(stepId);
+      }
+
+      if (skipped.length > 0) {
+        stepResults.push(...skipped);
         await updateIntelligenceJob(jobId, {
           stepResults: [...stepResults],
           currentStep: null,
         });
-        continue;
       }
 
-      if (decision === "skip-complete" || decision === "skip-filter") {
+      if (runnable.length === 0) {
         continue;
       }
 
       await updateIntelligenceJob(jobId, {
-        currentStep: step.id,
+        currentStep: runnable[0],
       });
 
-      const result = await runStep(step.id, job.applicationId);
-      stepResults.push(result);
+      const results =
+        runnable.length === 1
+          ? [await runStep(runnable[0], job.applicationId)]
+          : await Promise.all(runnable.map((stepId) => runStep(stepId, job.applicationId)));
+
+      stepResults.push(...results);
 
       await updateIntelligenceJob(jobId, {
         stepResults: [...stepResults],
         currentStep: null,
       });
 
-      if (result.status === "failed") {
+      const failed = results.find((result) => result.status === "failed");
+      if (failed) {
+        const step = INTELLIGENCE_STEPS.find((s) => s.id === failed.stepId);
         await updateIntelligenceJob(jobId, {
           status: "failed",
-          error: result.error ?? `${step.label} failed`,
+          error: failed.error ?? `${step?.label ?? failed.stepId} failed`,
           completedAt: new Date(),
         });
         return { jobId, stepResults, status: "failed" as const };

@@ -6,7 +6,8 @@ import { RoadmapBoard } from "@/components/applications/roadmap-board";
 import { serializeEpic } from "@/lib/serialize";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { ArrowLeft, Kanban } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { PmViewSwitcher } from "@/components/applications/pm-view-switcher";
 
 export default async function ApplicationRoadmapPage({
   params,
@@ -32,17 +33,11 @@ export default async function ApplicationRoadmapPage({
         title={`${application.name} — Roadmap`}
         description="Epic timeline for planning releases and feature tracks"
         actions={
-          <div className="flex gap-2">
-            <Link
-              href={`/applications/${id}/tasks`}
-              className={cn(buttonVariants({ variant: "outline" }))}
-            >
-              <Kanban className="mr-1 size-4" />
-              Board
-            </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <PmViewSwitcher applicationId={id} view="roadmap" />
             <Link
               href={`/applications/${id}`}
-              className={cn(buttonVariants({ variant: "outline" }))}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
             >
               <ArrowLeft className="mr-1 size-4" />
               App detail

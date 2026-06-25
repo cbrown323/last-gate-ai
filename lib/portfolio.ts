@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/db";
 import { serializeTask } from "@/lib/serialize";
 import type {
@@ -15,9 +16,9 @@ export type PortfolioTask = Task & {
   commentCount: number;
 };
 
-export async function getPortfolioStats(): Promise<PortfolioStats> {
+export const getPortfolioStats = cache(async (): Promise<PortfolioStats> => {
   const [applications, openTasks, overdueTasks, doingTasks] = await Promise.all([
-    prisma.application.findMany({ include: { gitMeta: true } }),
+    getApplications(),
     prisma.task.count({ where: { isClosed: false, status: { not: "done" } } }),
     prisma.task.count({
       where: {
@@ -59,9 +60,9 @@ export async function getPortfolioStats(): Promise<PortfolioStats> {
   }
 
   return stats;
-}
+});
 
-export async function getTaskPortfolioStats(): Promise<TaskPortfolioStats> {
+export const getTaskPortfolioStats = cache(async (): Promise<TaskPortfolioStats> => {
   const tasks = await prisma.task.findMany({
     where: { isClosed: false },
     include: { application: { select: { name: true } } },
@@ -126,9 +127,9 @@ export async function getTaskPortfolioStats(): Promise<TaskPortfolioStats> {
     recentActivity,
     overdue: overdue.slice(0, 8),
   };
-}
+});
 
-export async function getApplications() {
+export const getApplications = cache(async () => {
   return prisma.application.findMany({
     include: {
       gitMeta: true,
@@ -136,18 +137,18 @@ export async function getApplications() {
     },
     orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
   });
-}
+});
 
-export async function getPinnedApplications() {
+export const getPinnedApplications = cache(async () => {
   return prisma.application.findMany({
     where: { isPinned: true },
     include: { gitMeta: true, _count: { select: { tasks: true } } },
     orderBy: { updatedAt: "desc" },
     take: 5,
   });
-}
+});
 
-export async function getPortfolioTasks(): Promise<PortfolioTask[]> {
+export const getPortfolioTasks = cache(async (): Promise<PortfolioTask[]> => {
   const tasks = await prisma.task.findMany({
     where: { isClosed: false },
     include: {
@@ -162,4 +163,4 @@ export async function getPortfolioTasks(): Promise<PortfolioTask[]> {
     applicationName: task.application.name,
     commentCount: task._count.comments,
   }));
-}
+});
