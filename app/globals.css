@@ -1,0 +1,520 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans), "Inter", system-ui, sans-serif;
+  --font-mono: var(--font-mono), "DM Mono", ui-monospace, monospace;
+  --font-heading: var(--font-sans), "Inter", system-ui, sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-brand-teal: var(--brand-teal);
+  --color-brand-orange: var(--brand-orange);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* Light mode — warm parchment base matched to the Figma "ORBIT" palette.
+     Cards are warm white-glass so the frosted blur stays legible. */
+  --background: #e6e2dc;
+  --foreground: #1c1814;
+  /* Translucent surfaces so the backdrop-blur reads as frosted glass. */
+  --card: rgba(255, 252, 247, 0.62);
+  --card-foreground: #1c1814;
+  --popover: rgba(255, 252, 247, 0.92);
+  --popover-foreground: #1c1814;
+  --primary: #1d6b5e;
+  --primary-foreground: #ffffff;
+  --secondary: rgba(0, 0, 0, 0.04);
+  --secondary-foreground: #5c5850;
+  --muted: rgba(0, 0, 0, 0.03);
+  --muted-foreground: #78746e;
+  /* Neutral hover surface (shadcn `accent`) — kept low-chroma so hovers never
+     read as the orange brand colour. */
+  --accent: rgba(0, 0, 0, 0.05);
+  --accent-foreground: #1c1814;
+  --destructive: #b83828;
+  --border: rgba(0, 0, 0, 0.09);
+  --input: rgba(0, 0, 0, 0.06);
+  --ring: rgba(29, 107, 94, 0.4);
+  --chart-1: #1d6b5e;
+  --chart-2: #b05e28;
+  --chart-3: #3a6ea0;
+  --chart-4: #7050b0;
+  --chart-5: #b04060;
+  --radius: 0.625rem;
+  --sidebar: rgba(220, 216, 208, 0.78);
+  --sidebar-foreground: #1c1814;
+  --sidebar-primary: #1d6b5e;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(0, 0, 0, 0.05);
+  --sidebar-accent-foreground: #1c1814;
+  --sidebar-border: rgba(0, 0, 0, 0.08);
+  --sidebar-ring: rgba(29, 107, 94, 0.35);
+
+  /* Brand accents — Figma teal (primary) + warm orange, shared across views. */
+  --brand-teal: #1d6b5e;
+  --brand-orange: #b05e28;
+
+  /* Glassmorphism backdrop + surface tokens */
+  --bg-base: #e6e2dc;
+  --blob-teal: rgba(29, 107, 94, 0.08);
+  --blob-orange: rgba(176, 94, 40, 0.07);
+  --blob-slate: rgba(29, 60, 100, 0.04);
+  --glass-blur: 26px;
+  /* Embossed lighting: bright top-left edge, recessed bottom-right edge. */
+  --glass-highlight: rgba(255, 255, 255, 0.88);
+  --glass-emboss-light: rgba(255, 255, 255, 0.88);
+  --glass-emboss-dark: rgba(0, 0, 0, 0.08);
+  --glass-inner: rgba(0, 0, 0, 0.04);
+  /* Colored directional glows (orange top-left, teal bottom-right) + soft drop,
+     matching the Figma GlassCard shadow stack. */
+  --glass-drop:
+    -1.5px -1.5px 12px rgba(176, 94, 40, 0.14),
+    1.5px 1.5px 12px rgba(29, 107, 94, 0.14),
+    0 16px 48px rgba(0, 0, 0, 0.1),
+    0 4px 14px rgba(0, 0, 0, 0.07);
+  /* Chromatic-aberration fringe, kept tight + low-alpha so neighbouring
+     panels never bleed colour halos into one another. */
+  --fringe-orange: rgba(176, 94, 40, 0.22);
+  --fringe-teal: rgba(29, 107, 94, 0.22);
+}
+
+.dark {
+  /* Dark mode (default) — deep cool-slate base matched to the Figma "ORBIT"
+     palette: muted teal primary + warm orange brand, nothing neon. */
+  --background: #0b0e14;
+  --foreground: #e3dfd7;
+  --card: rgba(14, 18, 28, 0.55);
+  --card-foreground: #e3dfd7;
+  --popover: rgba(14, 18, 28, 0.85);
+  --popover-foreground: #e3dfd7;
+  --primary: #2a8070;
+  --primary-foreground: #ffffff;
+  --secondary: rgba(255, 255, 255, 0.04);
+  --secondary-foreground: #a8a49c;
+  --muted: rgba(255, 255, 255, 0.03);
+  --muted-foreground: #8a909a;
+  /* Neutral hover surface (shadcn `accent`) — kept low-chroma so hovers never
+     read as the orange brand colour. */
+  --accent: rgba(255, 255, 255, 0.06);
+  --accent-foreground: #e3dfd7;
+  --destructive: #c44838;
+  --border: rgba(255, 255, 255, 0.075);
+  --input: rgba(255, 255, 255, 0.05);
+  --ring: rgba(42, 128, 112, 0.5);
+  --chart-1: #2a8070;
+  --chart-2: #c47038;
+  --chart-3: #5b8fc4;
+  --chart-4: #8a6fc4;
+  --chart-5: #c45880;
+  --sidebar: rgba(10, 13, 20, 0.75);
+  --sidebar-foreground: #e3dfd7;
+  --sidebar-primary: #2a8070;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(255, 255, 255, 0.06);
+  --sidebar-accent-foreground: #e3dfd7;
+  --sidebar-border: rgba(255, 255, 255, 0.07);
+  --sidebar-ring: rgba(42, 128, 112, 0.4);
+
+  /* Brand accents — Figma teal (primary) + warm orange, shared across views. */
+  --brand-teal: #2a8070;
+  --brand-orange: #c47038;
+
+  /* Glassmorphism backdrop + surface tokens */
+  --bg-base: #0b0e14;
+  --blob-teal: rgba(42, 128, 112, 0.13);
+  --blob-orange: rgba(196, 112, 56, 0.1);
+  --blob-slate: rgba(42, 80, 120, 0.06);
+  --glass-blur: 26px;
+  /* Embossed lighting: faint top-left highlight, deep bottom-right shadow. */
+  --glass-highlight: rgba(255, 255, 255, 0.1);
+  --glass-emboss-light: rgba(255, 255, 255, 0.1);
+  --glass-emboss-dark: rgba(0, 0, 0, 0.42);
+  --glass-inner: rgba(0, 0, 0, 0.08);
+  /* Colored directional glows (orange top-left, teal bottom-right) + deep drop,
+     matching the Figma GlassCard shadow stack. */
+  --glass-drop:
+    -1.5px -1.5px 14px rgba(196, 112, 56, 0.2),
+    1.5px 1.5px 14px rgba(42, 128, 112, 0.2),
+    0 24px 64px rgba(0, 0, 0, 0.32),
+    0 4px 16px rgba(0, 0, 0, 0.2);
+  --fringe-orange: rgba(196, 112, 56, 0.38);
+  --fringe-teal: rgba(42, 128, 112, 0.38);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    background-color: var(--bg-base);
+    background-attachment: fixed;
+  }
+  body {
+    @apply text-foreground;
+    background: transparent;
+  }
+  /* Immersive colour field the frosted surfaces float over: three large radial
+     blobs (teal top-left, orange bottom-right, slate centre) drifting on
+     asymmetric cycles, each breathing in a very subtle opacity/scale pulse. */
+  body::before,
+  body::after {
+    content: "";
+    position: fixed;
+    z-index: -1;
+    pointer-events: none;
+    filter: blur(70px);
+    will-change: transform, opacity;
+  }
+  body::before {
+    inset: -25% -10% auto auto;
+    top: -22%;
+    left: -12%;
+    width: 80vw;
+    height: 80vh;
+    background:
+      radial-gradient(closest-side, var(--blob-teal), transparent 70%),
+      radial-gradient(closest-side, var(--blob-slate), transparent 72%) 55% 45% / 65% 65% no-repeat;
+    animation:
+      glass-drift-a 28s ease-in-out infinite alternate,
+      glass-breathe-a 22s ease-in-out infinite;
+  }
+  body::after {
+    bottom: -28%;
+    right: -14%;
+    width: 82vw;
+    height: 82vh;
+    background:
+      radial-gradient(closest-side, var(--blob-orange), transparent 70%),
+      radial-gradient(closest-side, var(--blob-slate), transparent 72%) 40% 55% / 60% 60% no-repeat;
+    animation:
+      glass-drift-b 36s ease-in-out infinite alternate,
+      glass-breathe-b 30s ease-in-out infinite;
+  }
+}
+
+@keyframes glass-drift-a {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(6%, 5%, 0) scale(1.1); }
+}
+
+@keyframes glass-drift-b {
+  0% { transform: translate3d(0, 0, 0) scale(1.08); }
+  100% { transform: translate3d(-5%, -4%, 0) scale(1); }
+}
+
+/* Extremely subtle breathing — the "calm pulse" of the gradient field. */
+@keyframes glass-breathe-a {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
+@keyframes glass-breathe-b {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.82; }
+}
+
+@layer components {
+  /* Embossed frosted-glass surface: translucent fill (set via bg-* token) +
+     backdrop blur, a soft top sheen, and a raised "emboss" lighting model —
+     bright top-left inner edge, recessed bottom-right inner edge, an ambient
+     inner ring, and a small neutral drop shadow. */
+  .glass-surface {
+    position: relative;
+    background-image: linear-gradient(180deg, var(--glass-highlight) 0%, transparent 40%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+    box-shadow:
+      inset 1.5px 1.5px 0 0 var(--glass-emboss-light),
+      inset -1px -1px 0 0 var(--glass-emboss-dark),
+      inset 0 0 40px var(--glass-inner),
+      var(--glass-drop);
+  }
+
+  /* Chromatic-aberration edge: orange fringe hugging the top-left, teal fringe
+     hugging the bottom-right, plus a thin orange→white→teal top border line.
+     Everything is a TIGHT inset so colour stays on the rim and never bleeds
+     into neighbouring panels (fixes the clashing-halo problem). */
+  .glass-surface::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 0;
+    box-shadow:
+      inset 1.5px 1.5px 0 -1px var(--fringe-orange),
+      inset -1.5px -1.5px 0 -1px var(--fringe-teal);
+  }
+  .glass-surface::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+    pointer-events: none;
+    z-index: 0;
+    background: linear-gradient(
+      90deg,
+      var(--fringe-orange),
+      oklch(1 0 0 / 0.55) 50%,
+      var(--fringe-teal)
+    );
+  }
+  /* Keep real content above the decorative pseudo-layers. */
+  .glass-surface > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Priority-reactive travelling edge highlight. A masked conic-gradient ring
+     sweeps around the border; higher priority => faster sweep + brighter pulse,
+     while staying subtle. Speed/brightness/colour come from data-priority. */
+  .priority-edge {
+    position: relative;
+  }
+  .priority-edge::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from var(--edge-angle, 0deg),
+      transparent 0deg,
+      var(--edge-color, var(--brand-teal)) var(--edge-arc, 55deg),
+      transparent calc(var(--edge-arc, 55deg) * 2),
+      transparent 360deg
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    animation:
+      edge-spin var(--edge-duration, 10s) linear infinite,
+      edge-pulse calc(var(--edge-duration, 10s) / 2) ease-in-out infinite;
+  }
+  .priority-edge[data-priority="low"] {
+    --edge-color: var(--brand-teal);
+    --edge-duration: 16s;
+    --edge-arc: 48deg;
+    --edge-opacity-min: 0.05;
+    --edge-opacity-max: 0.16;
+  }
+  .priority-edge[data-priority="medium"] {
+    --edge-color: var(--brand-teal);
+    --edge-duration: 10s;
+    --edge-arc: 55deg;
+    --edge-opacity-min: 0.1;
+    --edge-opacity-max: 0.3;
+  }
+  .priority-edge[data-priority="high"] {
+    --edge-color: var(--brand-orange);
+    --edge-duration: 5.5s;
+    --edge-arc: 66deg;
+    --edge-opacity-min: 0.18;
+    --edge-opacity-max: 0.46;
+  }
+  .priority-edge[data-priority="critical"] {
+    --edge-color: var(--brand-orange);
+    --edge-duration: 3s;
+    --edge-arc: 82deg;
+    --edge-opacity-min: 0.28;
+    --edge-opacity-max: 0.62;
+  }
+
+  /* Dashboard metric tiles: prismatic edge sweep; fill fades out toward center. */
+  .metric-tile-edge {
+    position: relative;
+    isolation: isolate;
+    transition:
+      box-shadow 0.35s ease,
+      border-color 0.35s ease;
+  }
+  .metric-tile-edge::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: 0;
+    opacity: 0;
+    background: conic-gradient(
+      from var(--edge-angle, 0deg),
+      oklch(0.82 0.22 330 / 0.6),
+      oklch(0.82 0.22 285 / 0.4),
+      oklch(0.82 0.22 240 / 0.55),
+      oklch(0.82 0.22 195 / 0.38),
+      oklch(0.82 0.22 150 / 0.6),
+      oklch(0.82 0.22 105 / 0.4),
+      oklch(0.82 0.22 60 / 0.55),
+      oklch(0.82 0.22 15 / 0.38),
+      oklch(0.82 0.22 330 / 0.6)
+    );
+    -webkit-mask-image: radial-gradient(
+      ellipse 130% 130% at 50% 50%,
+      transparent 30%,
+      rgb(0 0 0 / 0.35) 62%,
+      rgb(0 0 0 / 0.7) 84%,
+      #000 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 130% 130% at 50% 50%,
+      transparent 30%,
+      rgb(0 0 0 / 0.35) 62%,
+      rgb(0 0 0 / 0.7) 84%,
+      #000 100%
+    );
+    transition: opacity 0.35s ease;
+  }
+  .metric-tile-edge::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+      from var(--edge-angle, 0deg),
+      #ff5fa8 0deg,
+      #ff9f43 52deg,
+      #ffe066 104deg,
+      #5ee56f 156deg,
+      #4cc9f0 208deg,
+      #9d7dff 260deg,
+      #ff5fa8 360deg
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  .metric-tile-edge:hover {
+    border-color: oklch(0.82 0.1 280 / 0.28);
+    box-shadow: 0 0 20px oklch(0.62 0.12 280 / 0.14);
+  }
+  .metric-tile-edge:hover::before,
+  .metric-tile-edge:hover::after {
+    opacity: 1;
+    animation: edge-spin 7s linear infinite;
+  }
+}
+
+@property --edge-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes edge-spin {
+  to {
+    --edge-angle: 360deg;
+  }
+}
+
+@keyframes edge-pulse {
+  0%, 100% {
+    opacity: var(--edge-opacity-min, 0.12);
+  }
+  50% {
+    opacity: var(--edge-opacity-max, 0.4);
+  }
+}
+
+/* Accessibility: honour reduced-transparency by falling back to solid surfaces. */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --card: oklch(1 0 0);
+    --popover: oklch(1 0 0);
+    --sidebar: oklch(0.985 0 0);
+  }
+  .dark {
+    --card: oklch(0.2 0.02 262);
+    --popover: oklch(0.18 0.02 262);
+    --sidebar: oklch(0.16 0.02 262);
+  }
+  .glass-surface {
+    background-image: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .glass-surface::before,
+  .glass-surface::after {
+    display: none;
+  }
+  body::before,
+  body::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after {
+    animation: none;
+  }
+  /* Hold the priority edge as a faint static rim rather than a sweep. */
+  .priority-edge::after {
+    animation: none;
+    background: none;
+    box-shadow: inset 0 0 0 1px var(--edge-color, var(--brand-teal));
+    opacity: var(--edge-opacity-min, 0.12);
+  }
+  .metric-tile-edge:hover::before,
+  .metric-tile-edge:hover::after {
+    animation: none;
+    opacity: 0.35;
+  }
+  .metric-tile-edge:hover::after {
+    background: none;
+    box-shadow: inset 0 0 0 1px oklch(0.75 0.12 280 / 0.35);
+  }
+  .metric-tile-edge:hover {
+    box-shadow: none;
+  }
+}

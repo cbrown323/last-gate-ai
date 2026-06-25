@@ -1,0 +1,240 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Application {
+  id               String            @id @default(cuid())
+  name             String
+  description      String?
+  status           String            @default("development")
+  repoUrl          String?
+  websiteUrl       String?
+  owner            String?
+  lifecyclePhase   String            @default("development")
+  workflowType     String            @default("kanban")
+  ticketPrefix     String?
+  isPinned         Boolean           @default(false)
+  doingWipLimit           Int               @default(3)
+  lifecyclePhaseStartedAt DateTime          @default(now())
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+  gitMeta          GitMetadata?
+  tasks            Task[]
+  epics            Epic[]
+  summaries        AiSummary[]
+  stackScan        StackScan?
+  architectureMap  ArchitectureMap?
+  securityReports  SecurityReport[]
+  headroomReports  HeadroomReport[]
+  deployments      Deployment[]
+  notes            Note[]
+  events           CalendarEvent[]
+  intelligenceJobs IntelligenceJob[]
+}
+
+model IntelligenceJob {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  status        String      @default("pending")
+  currentStep   String?
+  stepResults   Json        @default("[]")
+  error         String?
+  trigger       String      @default("manual")
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime    @default(now())
+
+  @@index([applicationId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model GitMetadata {
+  id               String      @id @default(cuid())
+  applicationId    String      @unique
+  application      Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  lastCommitAt      DateTime?
+  commitCount       Int?
+  commitsLast7Days  Int?
+  commitsLast30Days Int?
+  contributorCount  Int?
+  openIssues       Int?
+  defaultBranch    String?
+  syncedAt         DateTime?
+}
+
+model Epic {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  name          String
+  description   String?
+  startsAt      DateTime?
+  endsAt        DateTime?
+  color         String?
+  position      Int         @default(0)
+  parentId      String?
+  parent        Epic?       @relation("EpicHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children      Epic[]      @relation("EpicHierarchy")
+  tasks         Task[]
+  createdAt     DateTime    @default(now())
+}
+
+model Task {
+  id              String           @id @default(cuid())
+  applicationId   String
+  application     Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  epicId          String?
+  epic            Epic?            @relation(fields: [epicId], references: [id], onDelete: SetNull)
+  title           String
+  description     String?
+  status          String           @default("backlog")
+  position        Int              @default(0)
+  priority        String           @default("medium")
+  assignee        String?
+  dueAt           DateTime?
+  startAt         DateTime?
+  reference       String?
+  tags            Json             @default("[]")
+  color           String?
+  code            String?
+  isClosed        Boolean          @default(false)
+  estimationHours Float?
+  timeSpentHours  Float            @default(0)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @default(now()) @updatedAt
+  subtasks        Subtask[]
+  comments        TaskComment[]
+  transitions     TaskTransition[]
+}
+
+model Subtask {
+  id       String @id @default(cuid())
+  taskId   String
+  task     Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  title    String
+  status   String @default("todo")
+  position Int    @default(0)
+}
+
+model TaskComment {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  body      String
+  author    String?
+  createdAt DateTime @default(now())
+}
+
+model TaskTransition {
+  id         String   @id @default(cuid())
+  taskId     String
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  fromStatus String?
+  toStatus   String
+  note       String?
+  createdAt  DateTime @default(now())
+}
+
+model AiSummary {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  content       String
+  generatedAt   DateTime    @default(now())
+}
+
+model StackScan {
+  id              String      @id @default(cuid())
+  applicationId   String      @unique
+  application     Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  frameworks      Json
+  languages       Json
+  dependencies    Json
+  manifestFiles   Json
+  lockfilePresent Boolean     @default(false)
+  scannedAt       DateTime    @default(now())
+}
+
+model ArchitectureMap {
+  id            String      @id @default(cuid())
+  applicationId String      @unique
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  layers        Json
+  directories   Json
+  diagram       String
+  mappedAt      DateTime    @default(now())
+}
+
+model SecurityReport {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  findings      Json
+  score         Int
+  summary       String
+  mode          String      @default("offline")
+  generatedAt   DateTime    @default(now())
+}
+
+model HeadroomReport {
+  id              String      @id @default(cuid())
+  applicationId   String
+  application     Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  score           Int
+  summary         String
+  recommendations Json
+  mode            String      @default("offline")
+  generatedAt     DateTime    @default(now())
+}
+
+model Deployment {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  platform      String
+  status        String      @default("unknown")
+  url           String?
+  version       String?
+  notes         String?
+  deployedAt    DateTime    @default(now())
+}
+
+model Note {
+  id            String       @id @default(cuid())
+  applicationId String?
+  application   Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  title         String
+  content       String       @default("")
+  tags          Json         @default("[]")
+  isPinned      Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @default(now()) @updatedAt
+
+  @@index([applicationId])
+}
+
+model CalendarEvent {
+  id            String       @id @default(cuid())
+  applicationId String?
+  application   Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  startAt       DateTime
+  endAt         DateTime?
+  allDay        Boolean      @default(false)
+  type          String       @default("event")
+  color         String?
+  location      String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @default(now()) @updatedAt
+
+  @@index([applicationId])
+  @@index([startAt])
+}
