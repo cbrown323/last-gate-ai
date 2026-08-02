@@ -52,6 +52,74 @@ const SOURCE_LABEL: Record<CalendarItem["source"], string> = {
   epic: "Milestone",
 };
 
+function projectLabel(item: CalendarItem): string {
+  return item.applicationName ?? "Workspace";
+}
+
+function itemAccent(color: string | null): string {
+  return color ?? "#10b981";
+}
+
+function CalendarItemStack({
+  item,
+  showProject,
+  variant,
+}: {
+  item: CalendarItem;
+  showProject: boolean;
+  variant: "compact" | "detail";
+}) {
+  const accent = itemAccent(item.color);
+  const isCompact = variant === "compact";
+
+  return (
+    <div
+      className={`overflow-hidden rounded-md border ${isCompact ? "text-[10px]" : "text-sm"}`}
+      style={{ borderColor: `${accent}35` }}
+    >
+      <div
+        className={`flex min-w-0 items-center gap-1 truncate ${
+          isCompact ? "px-1 py-0.5" : "px-2 py-1.5"
+        }`}
+        style={{ backgroundColor: `${accent}24` }}
+        title={item.title}
+      >
+        <span
+          className={`shrink-0 rounded-full ${isCompact ? "size-1.5" : "size-2"}`}
+          style={{ backgroundColor: accent }}
+        />
+        <span className={`truncate ${isCompact ? "" : "font-medium"}`}>{item.title}</span>
+      </div>
+      {showProject ? (
+        <div
+          className={`truncate border-t font-medium ${
+            isCompact ? "px-1 py-0.5 text-[9px]" : "px-2 py-1 text-xs"
+          }`}
+          style={{
+            backgroundColor: `${accent}12`,
+            borderColor: `${accent}25`,
+            color: accent,
+          }}
+          title={projectLabel(item)}
+        >
+          {projectLabel(item)}
+        </div>
+      ) : null}
+      {!isCompact ? (
+        <div className="flex flex-wrap items-center gap-1 border-t px-2 py-1.5" style={{ borderColor: `${accent}20` }}>
+          <Badge
+            variant="outline"
+            className="text-[10px]"
+            style={{ borderColor: `${accent}40`, color: accent }}
+          >
+            {SOURCE_LABEL[item.source]}
+          </Badge>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function CalendarView({
   initialItems,
   applications,
@@ -93,6 +161,7 @@ export function CalendarView({
   }
 
   const selectedItems = selectedDay ? dayItems(selectedDay) : [];
+  const showProject = !applicationId;
 
   async function refreshFeed() {
     const url = applicationId
@@ -165,17 +234,12 @@ export function CalendarView({
                     </span>
                     <div className="mt-0.5 space-y-0.5">
                       {dItems.slice(0, 3).map((item) => (
-                        <div
+                        <CalendarItemStack
                           key={item.id}
-                          className="flex items-center gap-1 truncate rounded px-1 text-[10px]"
-                          style={{ backgroundColor: `${item.color ?? "#10b981"}20` }}
-                        >
-                          <span
-                            className="size-1.5 shrink-0 rounded-full"
-                            style={{ backgroundColor: item.color ?? "#10b981" }}
-                          />
-                          <span className="truncate">{item.title}</span>
-                        </div>
+                          item={item}
+                          showProject={showProject}
+                          variant="compact"
+                        />
                       ))}
                       {dItems.length > 3 ? (
                         <p className="text-muted-foreground px-1 text-[10px]">
@@ -204,25 +268,11 @@ export function CalendarView({
               <ul className="space-y-2">
                 {selectedItems.map((item) => {
                   const body = (
-                    <div className="flex items-start gap-2 rounded-lg border p-2">
-                      <span
-                        className="mt-1 size-2 shrink-0 rounded-full"
-                        style={{ backgroundColor: item.color ?? "#10b981" }}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{item.title}</p>
-                        <div className="mt-1 flex flex-wrap items-center gap-1">
-                          <Badge variant="outline" className="text-[10px]">
-                            {SOURCE_LABEL[item.source]}
-                          </Badge>
-                          {item.applicationName ? (
-                            <span className="text-muted-foreground text-[11px]">
-                              {item.applicationName}
-                            </span>
-                          ) : null}
-                        </div>
-                      </div>
-                    </div>
+                    <CalendarItemStack
+                      item={item}
+                      showProject={showProject}
+                      variant="detail"
+                    />
                   );
                   return (
                     <li key={item.id}>

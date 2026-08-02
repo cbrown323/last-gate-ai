@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import {
   type NotesScope,
 } from "@/lib/notes/grouping";
 import { normalizeTitle } from "@/lib/notes/wikilinks";
+import { cn } from "@/lib/utils";
 import type { Note, NoteLink, NoteWithLinks } from "@/types";
 import {
   FileText,
@@ -48,16 +49,86 @@ import {
 type ViewMode = "edit" | "split" | "preview";
 type SaveState = "idle" | "saving" | "saved";
 
+type VaultGroupStyle = {
+  container: string;
+  header: string;
+  icon: string;
+  badge: string;
+};
+
+const WORKSPACE_VAULT_STYLE: VaultGroupStyle = {
+  container:
+    "border-slate-200/80 bg-slate-50/70 dark:border-slate-700/55 dark:bg-slate-900/35",
+  header: "text-slate-800 dark:text-slate-100",
+  icon: "text-slate-500 dark:text-slate-400",
+  badge:
+    "border-slate-200/80 bg-slate-100/90 text-slate-700 dark:border-slate-600 dark:bg-slate-800/60 dark:text-slate-200",
+};
+
+const PROJECT_VAULT_PALETTE: VaultGroupStyle[] = [
+  {
+    container:
+      "border-emerald-200/70 bg-emerald-50/55 dark:border-emerald-900/45 dark:bg-emerald-950/25",
+    header: "text-emerald-900 dark:text-emerald-100",
+    icon: "text-emerald-600 dark:text-emerald-400",
+    badge:
+      "border-emerald-200/70 bg-emerald-100/80 text-emerald-800 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-100",
+  },
+  {
+    container:
+      "border-sky-200/70 bg-sky-50/55 dark:border-sky-900/45 dark:bg-sky-950/25",
+    header: "text-sky-900 dark:text-sky-100",
+    icon: "text-sky-600 dark:text-sky-400",
+    badge:
+      "border-sky-200/70 bg-sky-100/80 text-sky-800 dark:border-sky-800/50 dark:bg-sky-950/40 dark:text-sky-100",
+  },
+  {
+    container:
+      "border-violet-200/70 bg-violet-50/55 dark:border-violet-900/45 dark:bg-violet-950/25",
+    header: "text-violet-900 dark:text-violet-100",
+    icon: "text-violet-600 dark:text-violet-400",
+    badge:
+      "border-violet-200/70 bg-violet-100/80 text-violet-800 dark:border-violet-800/50 dark:bg-violet-950/40 dark:text-violet-100",
+  },
+  {
+    container:
+      "border-amber-200/70 bg-amber-50/55 dark:border-amber-900/45 dark:bg-amber-950/25",
+    header: "text-amber-900 dark:text-amber-100",
+    icon: "text-amber-600 dark:text-amber-400",
+    badge:
+      "border-amber-200/70 bg-amber-100/80 text-amber-800 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-100",
+  },
+  {
+    container:
+      "border-rose-200/70 bg-rose-50/55 dark:border-rose-900/45 dark:bg-rose-950/25",
+    header: "text-rose-900 dark:text-rose-100",
+    icon: "text-rose-600 dark:text-rose-400",
+    badge:
+      "border-rose-200/70 bg-rose-100/80 text-rose-800 dark:border-rose-800/50 dark:bg-rose-950/40 dark:text-rose-100",
+  },
+];
+
+function vaultGroupStyle(groupKey: string): VaultGroupStyle {
+  if (groupKey === WORKSPACE_SCOPE) return WORKSPACE_VAULT_STYLE;
+  let hash = 0;
+  for (let i = 0; i < groupKey.length; i++) {
+    hash = (hash + groupKey.charCodeAt(i)) | 0;
+  }
+  return PROJECT_VAULT_PALETTE[Math.abs(hash) % PROJECT_VAULT_PALETTE.length];
+}
+
 export function NotesWorkspace({
   applicationId: fixedApplicationId,
   applications = [],
   initialNoteId,
   initialScope,
+  className,
 }: {
   applicationId?: string;
   applications?: { id: string; name: string }[];
   initialNoteId?: string;
   initialScope?: NotesScope;
+  className?: string;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -286,9 +357,9 @@ export function NotesWorkspace({
   }, [notes, filter]);
 
   const grouped = useMemo(() => {
-    if (!isGlobalVault || scope !== ALL_SCOPE || filter.trim()) return null;
+    if (!isGlobalVault || scope !== ALL_SCOPE) return null;
     return groupNotesByProject(filtered, applications);
-  }, [isGlobalVault, scope, filter, filtered, applications]);
+  }, [isGlobalVault, scope, filtered, applications]);
 
   const activeNote = notes.find((n) => n.id === activeId) ?? allNotes.find((n) => n.id === activeId) ?? null;
   const createTargetLabel = isGlobalVault
@@ -303,9 +374,14 @@ export function NotesWorkspace({
   );
 
   return (
-    <div className="grid h-[calc(100vh-13rem)] grid-cols-1 gap-4 md:grid-cols-[260px_1fr]">
-      <div className="flex flex-col rounded-lg border">
-        <div className="space-y-2 border-b p-3">
+    <div
+      className={cn(
+        "grid min-h-0 grid-cols-1 gap-4 md:grid-cols-[260px_1fr]",
+        className ?? "h-[calc(100vh-13rem)]"
+      )}
+    >
+      <div className="flex min-h-0 flex-col overflow-hidden rounded-lg border">
+        <div className="shrink-0 space-y-2 border-b p-3">
           {isGlobalVault ? (
             <div className="space-y-1">
               <p className="text-muted-foreground text-[10px] font-medium uppercase tracking-wide">
@@ -350,30 +426,34 @@ export function NotesWorkspace({
             />
           </div>
         </div>
-        <ScrollArea className="flex-1">
+        <ScrollArea className="min-h-0 flex-1">
           <div className="p-2">
             {loading ? (
               <p className="text-muted-foreground p-2 text-sm">Loading…</p>
             ) : filtered.length === 0 ? (
               <p className="text-muted-foreground p-2 text-sm">No notes yet.</p>
             ) : grouped ? (
-              grouped.map((group) => (
-                <div key={group.key} className="mb-3">
-                  <p className="text-muted-foreground mb-1 flex items-center gap-1 px-2 text-[10px] font-semibold uppercase tracking-wide">
-                    <FolderOpen className="size-3" />
-                    {group.label}
-                  </p>
-                  {group.notes.map((note) => (
-                    <NoteListItem
-                      key={note.id}
-                      note={note}
-                      activeId={activeId}
-                      onSelect={setActiveId}
-                      showProject={false}
-                    />
-                  ))}
-                </div>
-              ))
+              <div className="space-y-2">
+                {grouped.map((group) => (
+                  <VaultNoteGroup
+                    key={group.key}
+                    label={group.label}
+                    noteCount={group.notes.length}
+                    style={vaultGroupStyle(group.key)}
+                  >
+                    {group.notes.map((note) => (
+                      <NoteListItem
+                        key={note.id}
+                        note={note}
+                        activeId={activeId}
+                        onSelect={setActiveId}
+                        showProject={false}
+                        inVaultGroup
+                      />
+                    ))}
+                  </VaultNoteGroup>
+                ))}
+              </div>
             ) : (
               filtered.map((note) => (
                 <NoteListItem
@@ -390,8 +470,8 @@ export function NotesWorkspace({
       </div>
 
       {activeNote ? (
-        <div className="flex flex-col overflow-hidden rounded-lg border">
-          <div className="flex flex-wrap items-center gap-2 border-b p-3">
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-lg border">
+          <div className="flex shrink-0 flex-wrap items-center gap-2 border-b p-3">
             <Input
               value={title}
               onChange={(e) => {
@@ -448,41 +528,53 @@ export function NotesWorkspace({
             </div>
           </div>
 
-          <div className="grid flex-1 grid-cols-1 overflow-hidden md:grid-cols-2">
+          <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden md:grid-cols-2">
             {view !== "preview" ? (
-              <textarea
-                value={content}
-                onChange={(e) => {
-                  setContent(e.target.value);
-                  scheduleSave({ content: e.target.value });
-                }}
-                spellCheck
-                placeholder={"Write in markdown. Link notes with [[Note title]].\n\n# Heading\n- bullet\n**bold**, *italic*, `code`"}
-                className={`h-full resize-none bg-background p-4 font-mono text-sm leading-relaxed outline-none ${
+              <div
+                className={cn(
+                  "flex min-h-0 flex-col overflow-hidden",
                   view === "split" ? "border-r" : "md:col-span-2"
-                }`}
-              />
+                )}
+              >
+                <textarea
+                  value={content}
+                  onChange={(e) => {
+                    setContent(e.target.value);
+                    scheduleSave({ content: e.target.value });
+                  }}
+                  spellCheck
+                  placeholder={"Write in markdown. Link notes with [[Note title]].\n\n# Heading\n- bullet\n**bold**, *italic*, `code`"}
+                  className="min-h-0 flex-1 resize-none overflow-y-auto bg-background p-4 font-mono text-sm leading-relaxed outline-none"
+                />
+              </div>
             ) : null}
             {view !== "edit" ? (
-              <ScrollArea className={view === "preview" ? "md:col-span-2" : ""}>
-                <div className="p-4">
-                  {content.trim() ? (
-                    rendered
-                  ) : (
-                    <p className="text-muted-foreground text-sm">Nothing to preview yet.</p>
-                  )}
-                  <LinksPanel
-                    links={links}
-                    wikilinkApp={wikilinkApp}
-                    fixedApplicationId={fixedApplicationId}
-                  />
-                </div>
-              </ScrollArea>
+              <div
+                className={cn(
+                  "flex min-h-0 flex-col overflow-hidden",
+                  view === "preview" ? "md:col-span-2" : ""
+                )}
+              >
+                <ScrollArea className="min-h-0 flex-1">
+                  <div className="p-4">
+                    {content.trim() ? (
+                      rendered
+                    ) : (
+                      <p className="text-muted-foreground text-sm">Nothing to preview yet.</p>
+                    )}
+                    <LinksPanel
+                      links={links}
+                      wikilinkApp={wikilinkApp}
+                      fixedApplicationId={fixedApplicationId}
+                    />
+                  </div>
+                </ScrollArea>
+              </div>
             ) : null}
           </div>
 
           {activeNote.tags.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-1 border-t p-2">
+            <div className="flex shrink-0 flex-wrap items-center gap-1 border-t p-2">
               <Hash className="text-muted-foreground size-3" />
               {activeNote.tags.map((t) => (
                 <Badge key={t} variant="secondary" className="text-[10px]">
@@ -493,7 +585,7 @@ export function NotesWorkspace({
           ) : null}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-lg border text-center">
+        <div className="flex min-h-0 flex-col items-center justify-center overflow-hidden rounded-lg border text-center">
           <FileText className="text-muted-foreground mb-3 size-10" />
           <p className="font-medium">No note selected</p>
           <p className="text-muted-foreground mb-4 max-w-sm text-sm">
@@ -510,24 +602,65 @@ export function NotesWorkspace({
   );
 }
 
+function VaultNoteGroup({
+  label,
+  noteCount,
+  style,
+  children,
+}: {
+  label: string;
+  noteCount: number;
+  style: VaultGroupStyle;
+  children: ReactNode;
+}) {
+  return (
+    <section className={cn("overflow-hidden rounded-lg border shadow-sm", style.container)}>
+      <div
+        className={cn(
+          "flex items-center justify-between gap-2 border-b border-inherit px-2.5 py-2",
+          style.header
+        )}
+      >
+        <p className="flex min-w-0 items-center gap-1.5 text-[11px] font-semibold tracking-wide">
+          <FolderOpen className={cn("size-3.5 shrink-0", style.icon)} />
+          <span className="truncate uppercase">{label}</span>
+        </p>
+        <Badge variant="outline" className={cn("h-5 shrink-0 px-1.5 text-[10px]", style.badge)}>
+          {noteCount}
+        </Badge>
+      </div>
+      <div className="space-y-0.5 p-1">{children}</div>
+    </section>
+  );
+}
+
 function NoteListItem({
   note,
   activeId,
   onSelect,
   showProject,
+  inVaultGroup = false,
 }: {
   note: Note;
   activeId: string | null;
   onSelect: (id: string) => void;
   showProject: boolean;
+  inVaultGroup?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={() => onSelect(note.id)}
-      className={`group flex w-full items-start gap-2 rounded-md p-2 text-left ${
-        note.id === activeId ? "bg-accent" : "hover:bg-accent/50"
-      }`}
+      className={cn(
+        "group flex w-full items-start gap-2 rounded-md p-2 text-left transition-colors",
+        inVaultGroup
+          ? note.id === activeId
+            ? "bg-background/85 shadow-sm ring-1 ring-border/70"
+            : "hover:bg-background/55"
+          : note.id === activeId
+            ? "bg-accent"
+            : "hover:bg-accent/50"
+      )}
     >
       <FileText className="text-muted-foreground mt-0.5 size-4 shrink-0" />
       <div className="min-w-0 flex-1">

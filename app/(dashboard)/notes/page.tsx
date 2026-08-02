@@ -33,13 +33,20 @@ export default async function NotesPage({
   });
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Notes"
-        description="Obsidian-style knowledge base — organize notes by project vault or keep standalone workspace notes, link with [[wikilinks]], and follow backlinks."
-      />
-      <Suspense fallback={<p className="text-muted-foreground text-sm">Loading notes…</p>}>
+    <div className="flex h-[calc(100svh-3.5rem-2rem)] flex-col gap-6 md:h-[calc(100svh-3.5rem-3rem)]">
+      <div className="shrink-0">
+        <PageHeader
+          title="Notes"
+          description="Obsidian-style knowledge base — organize notes by project vault or keep standalone workspace notes, link with [[wikilinks]], and follow backlinks."
+        />
+      </div>
+      <Suspense
+        fallback={
+          <p className="text-muted-foreground min-h-0 flex-1 text-sm">Loading notes…</p>
+        }
+      >
         <NotesWorkspace
+          className="min-h-0 flex-1"
           applications={applications}
           initialNoteId={params.note}
           initialScope={parseNotesScope(params.app)}
