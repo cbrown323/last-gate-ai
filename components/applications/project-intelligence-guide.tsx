@@ -1,20 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   INTELLIGENCE_STEPS,
-  countCompletedSteps,
-  getNextIntelligenceStep,
-  isAnalysisComplete,
   type IntelligenceProgress,
   type IntelligenceStepId,
 } from "@/lib/applications/intelligence-workflow";
 import type { IntelligenceTabValue } from "@/components/applications/application-detail-tabs";
-import type { IntelligenceJobRecord } from "@/types";
 import { cn } from "@/lib/utils";
 import {
   CheckCircle2,
@@ -27,60 +22,69 @@ import {
 
 type StepRuntimeStatus = "pending" | "running" | "complete" | "skipped" | "error";
 
-function progressFromJob(
-  job: IntelligenceJobRecord,
-  repoUrl: string | null,
-  fallback: IntelligenceProgress
-): IntelligenceProgress {
-  const progress = { ...fallback };
-
-  for (const result of job.stepResults) {
-    if (result.status === "complete") {
-      progress[result.stepId] = "complete";
-    } else if (result.status === "skipped") {
-      progress[result.stepId] = "skipped";
-    }
-  }
-
-  for (const step of INTELLIGENCE_STEPS) {
-    if (step.requiresRepo && !repoUrl && progress[step.id] === "pending") {
-      progress[step.id] = "skipped";
-    }
-  }
-
-  return progress;
-}
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+export function AnalysisRunButton({
+  ctaLabel,
+  running,
+  canRun,
+  onClick,
+  className,
+  size = "default",
+}: {
+  ctaLabel: string;
+  running: boolean;
+  canRun: boolean;
+  onClick: () => void;
+  className?: string;
+  size?: "default" | "sm" | "lg";
+}) {
+  return (
+    <Button
+      onClick={onClick}
+      disabled={!canRun}
+      size={size}
+      className={cn("bg-emerald-600 hover:bg-emerald-700", className)}
+    >
+      {running ? (
+        <Loader2 className="mr-1 size-4 animate-spin" />
+      ) : (
+        <Sparkles className="mr-1 size-4" />
+      )}
+      {ctaLabel}
+    </Button>
+  );
 }
 
 export function ProjectIntelligenceGuide({
-  applicationId,
   repoUrl,
   progress,
   running,
-  onRunningChange,
-  onProgressChange,
+  activeStepId,
+  error,
+  activeStepDescription,
+  completedCount,
+  totalSteps,
+  analysisComplete,
+  ctaLabel,
+  ctaHint,
+  canRun,
+  onRunAnalysis,
   onStepTab,
 }: {
-  applicationId: string;
   repoUrl: string | null;
   progress: IntelligenceProgress;
   running: boolean;
-  onRunningChange: (running: boolean) => void;
-  onProgressChange: (progress: IntelligenceProgress) => void;
+  activeStepId: IntelligenceStepId | null;
+  error: string | null;
+  activeStepDescription: string | null;
+  completedCount: number;
+  totalSteps: number;
+  analysisComplete: boolean;
+  ctaLabel: string;
+  ctaHint: string | null;
+  canRun: boolean;
+  onRunAnalysis: () => void;
   onStepTab: (tab: IntelligenceTabValue) => void;
 }) {
-  const router = useRouter();
-  const [activeStepId, setActiveStepId] = useState<IntelligenceStepId | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const completedCount = countCompletedSteps(progress, repoUrl);
-  const totalSteps = INTELLIGENCE_STEPS.length;
-  const analysisComplete = isAnalysisComplete(progress, repoUrl);
-  const nextStep = getNextIntelligenceStep(progress, repoUrl);
-
   const stepStatuses = useMemo(() => {
     const statuses: Record<IntelligenceStepId, StepRuntimeStatus> = {
       git: progress.git,
@@ -105,120 +109,36 @@ export function ProjectIntelligenceGuide({
     return statuses;
   }, [progress, repoUrl, activeStepId, running]);
 
-  async function pollJob(jobId: string, fromBeginning: boolean) {
-    let workingProgress = { ...progress };
-
-    if (fromBeginning) {
-      workingProgress = Object.fromEntries(
-        INTELLIGENCE_STEPS.map((step) => [
-          step.id,
-          step.requiresRepo && !repoUrl ? "skipped" : "pending",
-        ])
-      ) as IntelligenceProgress;
-      onProgressChange(workingProgress);
-    }
-
-    for (;;) {
-      const res = await fetch(`/api/intelligence/jobs/${jobId}`);
-      const job = (await res.json()) as IntelligenceJobRecord & { error?: string };
-
-      if (!res.ok) {
-        throw new Error(typeof job.error === "string" ? job.error : "Failed to poll job");
-      }
-
-      workingProgress = progressFromJob(job, repoUrl, workingProgress);
-      onProgressChange(workingProgress);
-
-      if (job.currentStep) {
-        setActiveStepId(job.currentStep);
-        const step = INTELLIGENCE_STEPS.find((s) => s.id === job.currentStep);
-        if (step) onStepTab(step.tab);
-      }
-
-      if (job.status === "complete") {
-        setActiveStepId(null);
-        router.refresh();
-        return;
-      }
-
-      if (job.status === "failed") {
-        setActiveStepId(null);
-        throw new Error(job.error ?? "Analysis failed");
-      }
-
-      await sleep(1000);
-    }
-  }
-
-  async function runAnalysis(fromBeginning = false) {
-    onRunningChange(true);
-    setError(null);
-
-    try {
-      const res = await fetch("/api/intelligence/run", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          applicationId,
-          fromBeginning,
-          trigger: "manual",
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        const msg = typeof data.error === "string" ? data.error : "Failed to start analysis";
-        throw new Error(msg);
-      }
-
-      await pollJob(data.jobId as string, fromBeginning);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Analysis failed");
-    } finally {
-      setActiveStepId(null);
-      onRunningChange(false);
-    }
-  }
-
-  const ctaLabel = running
-    ? activeStepId
-      ? `Analyzing ${INTELLIGENCE_STEPS.find((s) => s.id === activeStepId)?.label ?? "project"}…`
-      : "Analyzing project…"
-    : analysisComplete
-      ? "Re-run analysis"
-      : completedCount > 0
-        ? "Continue analysis"
-        : "Start product analysis";
-
   return (
     <Card className="border-emerald-200/60 bg-emerald-50/30 shadow-sm dark:border-emerald-900/40 dark:bg-emerald-950/20">
       <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1">
             <CardTitle className="flex items-center gap-2 text-base">
               <Sparkles className="size-4 text-emerald-600" />
               Guided product analysis
             </CardTitle>
             <p className="text-muted-foreground text-sm">
-              One flow from repo intelligence through security to deployment — no need to hunt for generate buttons.
-              Velocity and effort are measured from GitHub commits and board activity; results appear on the portfolio dashboard.
+              Run the full pipeline in one click — git sync, stack scan, AI summary, security, and
+              more. Individual steps also live under the Intelligence tab.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="text-xs">
+          <div className="flex shrink-0 flex-col items-stretch gap-1 sm:items-end">
+            <Badge variant="outline" className="self-start text-xs sm:self-end">
               {completedCount}/{totalSteps} complete
             </Badge>
-            <Button
-              onClick={() => runAnalysis(analysisComplete)}
-              disabled={running || (!analysisComplete && !nextStep)}
-              className="bg-emerald-600 hover:bg-emerald-700"
-            >
-              {running ? (
-                <Loader2 className="mr-1 size-4 animate-spin" />
-              ) : (
-                <Sparkles className="mr-1 size-4" />
-              )}
-              {ctaLabel}
-            </Button>
+            <AnalysisRunButton
+              ctaLabel={ctaLabel}
+              running={running}
+              canRun={canRun}
+              onClick={onRunAnalysis}
+              className="w-full sm:w-auto"
+            />
+            {ctaHint ? (
+              <p className="text-muted-foreground max-w-xs text-right text-[11px] leading-snug">
+                {ctaHint}
+              </p>
+            ) : null}
           </div>
         </div>
       </CardHeader>
@@ -238,10 +158,8 @@ export function ProjectIntelligenceGuide({
           </p>
         ) : null}
 
-        {running && activeStepId ? (
-          <p className="text-muted-foreground text-sm">
-            {INTELLIGENCE_STEPS.find((step) => step.id === activeStepId)?.description}
-          </p>
+        {activeStepDescription ? (
+          <p className="text-muted-foreground text-sm">{activeStepDescription}</p>
         ) : null}
 
         <div className="flex gap-1 overflow-x-auto pb-1">
@@ -285,7 +203,8 @@ export function ProjectIntelligenceGuide({
 
         {analysisComplete && !running ? (
           <p className="text-muted-foreground text-xs">
-            Analysis complete. Browse each tab for details.
+            All steps finished. Browse Intelligence sub-tabs below for details, or run full analysis
+            again to refresh with live data.
           </p>
         ) : null}
       </CardContent>

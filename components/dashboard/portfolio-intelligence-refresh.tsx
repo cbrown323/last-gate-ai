@@ -32,7 +32,15 @@ export function PortfolioIntelligenceRefresh({
 
       const refreshed = typeof data.refreshed === "number" ? data.refreshed : 0;
       const failed = typeof data.failed === "number" ? data.failed : 0;
-      setMessage(`Refreshed ${refreshed} app${refreshed === 1 ? "" : "s"}${failed > 0 ? ` (${failed} failed)` : ""}.`);
+      const failures = Array.isArray(data.failures)
+        ? (data.failures as { name: string; error: string }[])
+        : [];
+
+      let summary = `Refreshed ${refreshed} app${refreshed === 1 ? "" : "s"}${failed > 0 ? ` (${failed} failed)` : ""}.`;
+      if (failures.length > 0) {
+        summary += ` ${failures.map((f) => `${f.name}: ${f.error}`).join(" · ")}`;
+      }
+      setMessage(summary);
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Refresh failed");

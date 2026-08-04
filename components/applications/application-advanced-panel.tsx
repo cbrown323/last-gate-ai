@@ -32,7 +32,7 @@ export function ApplicationAdvancedPanel({
           <div className="min-w-0">
             <p className="text-sm font-medium">Advanced</p>
             <p className="text-muted-foreground truncate text-xs">
-              Lifecycle timing, guided analysis, and phase controls
+              Lifecycle phase and workflow timing controls
             </p>
           </div>
         </div>
@@ -51,7 +51,8 @@ export function ApplicationAdvancedPanel({
       {open ? <CardContent className="space-y-4 border-t pt-4">{children}</CardContent> : null}
       {!open && !analysisComplete ? (
         <p className="text-muted-foreground border-t px-4 py-2 text-xs">
-          Product analysis is incomplete. Open Advanced to run or review the guided flow.
+          Run <span className="font-medium text-foreground">full analysis</span> above, then browse
+          results under the Intelligence tab.
         </p>
       ) : null}
     </Card>

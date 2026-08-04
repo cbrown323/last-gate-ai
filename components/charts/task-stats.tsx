@@ -1,7 +1,7 @@
 "use client";
 
 import { Bar, BarChart, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   ChartContainer,
   ChartLegend,
@@ -10,6 +10,8 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { ChartEmpty } from "@/components/charts/chart-empty";
+import { MetricCardTitle } from "@/components/dashboard/metric-info";
 import {
   TASK_PRIORITIES,
   TASK_PRIORITY_LABELS,
@@ -43,6 +45,8 @@ const priorityColors = [
   "hsl(0 84% 60%)",
 ];
 
+const EMPTY_BOARD_MESSAGE = "No tasks on any board yet. Create tasks to populate this chart.";
+
 export function TaskStatusChart({ stats }: { stats: TaskPortfolioStats }) {
   const data = TASK_STATUSES.map((s) => ({
     status: s,
@@ -50,32 +54,32 @@ export function TaskStatusChart({ stats }: { stats: TaskPortfolioStats }) {
     fill: statusColors[s],
   }));
 
+  const total = data.reduce((sum, entry) => sum + entry.count, 0);
+
   return (
     <Card className="shadow-sm">
       <CardHeader>
-        <CardTitle className="text-base">Tasks by status</CardTitle>
+        <MetricCardTitle id="tasksByStatus" />
       </CardHeader>
       <CardContent>
-        <ChartContainer
-          config={statusChartConfig}
-          className="mx-auto aspect-square max-h-[220px] w-full"
-        >
-          <PieChart>
-            <ChartTooltip content={<ChartTooltipContent hideLabel nameKey="status" />} />
-            <Pie
-              data={data}
-              dataKey="count"
-              nameKey="status"
-              innerRadius={40}
-              strokeWidth={2}
-            >
-              {data.map((entry) => (
-                <Cell key={entry.status} fill={entry.fill} />
-              ))}
-            </Pie>
-            <ChartLegend content={<ChartLegendContent nameKey="status" />} />
-          </PieChart>
-        </ChartContainer>
+        {total === 0 ? (
+          <ChartEmpty message={EMPTY_BOARD_MESSAGE} />
+        ) : (
+          <ChartContainer
+            config={statusChartConfig}
+            className="mx-auto aspect-square max-h-[220px] w-full"
+          >
+            <PieChart>
+              <ChartTooltip content={<ChartTooltipContent hideLabel nameKey="status" />} />
+              <Pie data={data} dataKey="count" nameKey="status" innerRadius={40} strokeWidth={2}>
+                {data.map((entry) => (
+                  <Cell key={entry.status} fill={entry.fill} />
+                ))}
+              </Pie>
+              <ChartLegend content={<ChartLegendContent nameKey="status" />} />
+            </PieChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );
@@ -88,24 +92,30 @@ export function TaskPriorityChart({ stats }: { stats: TaskPortfolioStats }) {
     fill: priorityColors[i],
   }));
 
+  const total = data.reduce((sum, entry) => sum + entry.count, 0);
+
   return (
     <Card className="shadow-sm">
       <CardHeader>
-        <CardTitle className="text-base">Tasks by priority</CardTitle>
+        <MetricCardTitle id="tasksByPriority" />
       </CardHeader>
       <CardContent>
-        <ChartContainer config={priorityConfig} className="h-[200px] w-full">
-          <BarChart data={data}>
-            <XAxis dataKey="priority" tick={{ fontSize: 11 }} />
-            <YAxis allowDecimals={false} />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar dataKey="count" radius={4}>
-              {data.map((entry, i) => (
-                <Cell key={i} fill={entry.fill} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ChartContainer>
+        {total === 0 ? (
+          <ChartEmpty message={EMPTY_BOARD_MESSAGE} />
+        ) : (
+          <ChartContainer config={priorityConfig} className="h-[200px] w-full">
+            <BarChart data={data}>
+              <XAxis dataKey="priority" tick={{ fontSize: 11 }} />
+              <YAxis allowDecimals={false} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Bar dataKey="count" radius={4}>
+                {data.map((entry, i) => (
+                  <Cell key={i} fill={entry.fill} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );

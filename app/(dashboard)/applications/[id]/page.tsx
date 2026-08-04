@@ -22,8 +22,6 @@ import { ApplicationDetailShell } from "@/components/applications/application-de
 import { PmViewSwitcher } from "@/components/applications/pm-view-switcher";
 import { buildIntelligenceProgress } from "@/lib/applications/intelligence-workflow";
 import { ExternalLink } from "lucide-react";
-import { DemoPreviewBadge } from "@/components/demo/demo-preview-badge";
-import { isDemoApplication } from "@/lib/demo/load-preview";
 import { LifecycleBanner } from "@/components/applications/lifecycle-banner";
 import type { LifecyclePhase, WorkflowType } from "@/types";
 import { formatDistanceToNow } from "date-fns";
@@ -89,7 +87,6 @@ export default async function ApplicationDetailPage({
         description={application.description ?? undefined}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            {isDemoApplication(application.name) ? <DemoPreviewBadge /> : null}
             <Badge>{application.status as ApplicationStatus}</Badge>
             <ApplicationPinButton
               applicationId={id}
@@ -190,8 +187,8 @@ export default async function ApplicationDetailPage({
             {!application.repoUrl || !application.websiteUrl ? (
               <p className="text-muted-foreground text-sm">
                 Missing details? Use <span className="font-medium text-foreground">Edit</span> above,
-                or open <span className="font-medium text-foreground">Advanced</span> for guided
-                analysis and lifecycle controls.
+                or run <span className="font-medium text-foreground">full analysis</span> for repo
+                intelligence.
               </p>
             ) : null}
           </>

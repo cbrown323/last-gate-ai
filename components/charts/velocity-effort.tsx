@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Bar, BarChart, Cell, XAxis, YAxis } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   ChartContainer,
@@ -10,10 +10,12 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { ChartEmpty } from "@/components/charts/chart-empty";
+import { MetricCardTitle } from "@/components/dashboard/metric-info";
+import { MetricTile, MetricTileGrid } from "@/components/dashboard/metric-tile";
 import { formatVelocityTrend } from "@/lib/pm/velocity-types";
 import type { VelocityEffortStats } from "@/types";
 import { LIFECYCLE_PHASE_LABELS } from "@/types";
-import { Activity, Clock, GitCommit, Gauge, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const velocityChartConfig = {
@@ -34,44 +36,40 @@ export function VelocityEffortSummary({
 }) {
   const cards = [
     {
-      key: "portfolioVelocity",
+      key: "portfolioVelocity" as const,
       show:
         !hideZero ||
         stats.commitsLast7Days > 0 ||
         stats.tasksCompletedLast7Days > 0 ||
         stats.boardEditsLast7Days > 0,
-      icon: Gauge,
-      label: "Portfolio velocity",
+      icon: "gauge" as const,
       value: `${stats.portfolioVelocity}`,
       hint: `${stats.commitsLast7Days} commits · ${stats.tasksCompletedLast7Days} tasks done (7d)`,
-      accent: "text-emerald-600",
+      tone: "positive" as const,
     },
     {
-      key: "portfolioEffort",
+      key: "portfolioEffort" as const,
       show: !hideZero || stats.spentHours > 0 || stats.estimatedHours > 0,
-      icon: Clock,
-      label: "Portfolio effort",
+      icon: "clock" as const,
       value: `${stats.portfolioEffortScore}`,
       hint: `${stats.spentHours.toFixed(1)}h logged · ${stats.estimatedHours.toFixed(1)}h estimated`,
-      accent: "text-blue-600",
+      tone: "info" as const,
     },
     {
-      key: "repoActivity",
+      key: "repoActivity" as const,
       show: !hideZero || stats.commitsLast30Days > 0,
-      icon: GitCommit,
-      label: "Repo activity",
+      icon: "commit" as const,
       value: `${stats.commitsLast30Days}`,
       hint: `${stats.commitsLast7Days} commits in the last 7 days`,
-      accent: "text-violet-600",
+      tone: "accent" as const,
     },
     {
-      key: "boardActivity",
+      key: "boardActivity" as const,
       show: !hideZero || stats.boardEditsLast7Days > 0 || stats.tasksCompletedLast30Days > 0,
-      icon: Activity,
-      label: "Board activity",
+      icon: "activity" as const,
       value: `${stats.boardEditsLast7Days}`,
       hint: `${stats.tasksCompletedLast30Days} tasks completed in 30 days`,
-      accent: "text-amber-600",
+      tone: "warning" as const,
     },
   ].filter((card) => card.show);
 
@@ -80,107 +78,81 @@ export function VelocityEffortSummary({
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {cards.map(({ key, icon, label, value, hint, accent }) => (
-        <MetricCard
-          key={key}
-          icon={icon}
-          label={label}
-          value={value}
-          hint={hint}
-          accent={accent}
-        />
+    <MetricTileGrid>
+      {cards.map(({ key, icon, value, hint, tone }) => (
+        <MetricTile key={key} id={key} icon={icon} value={value} hint={hint} tone={tone} />
       ))}
-    </div>
-  );
-}
-
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  hint,
-  accent,
-}: {
-  icon: typeof Gauge;
-  label: string;
-  value: string;
-  hint: string;
-  accent: string;
-}) {
-  return (
-    <Card className="shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-muted-foreground text-sm font-medium">{label}</CardTitle>
-        <Icon className={cn("size-4", accent)} />
-      </CardHeader>
-      <CardContent>
-        <div className="text-3xl font-bold">{value}</div>
-        <p className="text-muted-foreground mt-1 text-xs">{hint}</p>
-      </CardContent>
-    </Card>
+    </MetricTileGrid>
   );
 }
 
 export function VelocityByApplicationChart({ stats }: { stats: VelocityEffortStats }) {
   const data = stats.byApplication.slice(0, 8).map((app) => ({
-    name: app.applicationName.length > 14 ? `${app.applicationName.slice(0, 14)}…` : app.applicationName,
+    name:
+      app.applicationName.length > 14
+        ? `${app.applicationName.slice(0, 14)}…`
+        : app.applicationName,
     fullName: app.applicationName,
     velocityScore: app.velocityScore,
     effortScore: app.effortScore,
     trend: app.velocityTrend,
   }));
 
-  if (data.length === 0) {
-    return (
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base">Velocity & effort by project</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-sm">
-            Add applications and sync GitHub to see velocity scores.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
+  const hasSignal = data.some((app) => app.velocityScore > 0 || app.effortScore > 0);
 
   return (
     <Card className="shadow-sm">
       <CardHeader>
-        <CardTitle className="text-base">Velocity & effort by project</CardTitle>
-        <p className="text-muted-foreground text-xs">
-          Velocity = commits + completed tasks + board edits. Effort = logged hours + estimates + activity.
-        </p>
+        <MetricCardTitle id="velocityByProject" />
       </CardHeader>
       <CardContent>
-        <ChartContainer config={velocityChartConfig} className="h-[240px] w-full">
-          <BarChart data={data} margin={{ left: 0, right: 8 }}>
-            <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-20} textAnchor="end" height={50} />
-            <YAxis allowDecimals={false} domain={[0, 100]} />
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  labelFormatter={(_, payload) =>
-                    payload?.[0]?.payload?.fullName ?? ""
-                  }
-                />
-              }
-            />
-            <Bar dataKey="velocityScore" fill="var(--color-velocityScore)" radius={4} name="Velocity" />
-            <Bar dataKey="effortScore" fill="var(--color-effortScore)" radius={4} name="Effort" />
-          </BarChart>
-        </ChartContainer>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {stats.byApplication.slice(0, 5).map((app) => (
-            <Link key={app.applicationId} href={`/applications/${app.applicationId}`}>
-              <Badge variant="outline" className="text-[10px]">
-                {app.applicationName}: {formatVelocityTrend(app.velocityTrend)}
-              </Badge>
-            </Link>
-          ))}
-        </div>
+        {data.length === 0 ? (
+          <ChartEmpty message="Add applications and sync GitHub to see velocity scores." />
+        ) : !hasSignal ? (
+          <ChartEmpty message="No commits, completed tasks, or board edits recorded yet — every project scores zero." />
+        ) : (
+          <ChartContainer config={velocityChartConfig} className="h-[240px] w-full">
+            <BarChart data={data} margin={{ left: 0, right: 8 }}>
+              <XAxis
+                dataKey="name"
+                tick={{ fontSize: 10 }}
+                interval={0}
+                angle={-20}
+                textAnchor="end"
+                height={50}
+              />
+              <YAxis allowDecimals={false} domain={[0, 100]} />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(_, payload) => payload?.[0]?.payload?.fullName ?? ""}
+                  />
+                }
+              />
+              <Bar
+                dataKey="velocityScore"
+                fill="var(--color-velocityScore)"
+                radius={4}
+                name="Velocity"
+              />
+              <Bar dataKey="effortScore" fill="var(--color-effortScore)" radius={4} name="Effort" />
+            </BarChart>
+          </ChartContainer>
+        )}
+        {data.length > 0 ? (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {stats.byApplication.slice(0, 5).map((app) => (
+              <Link key={app.applicationId} href={`/applications/${app.applicationId}`}>
+                <Badge variant="outline" className="text-[10px] font-normal">
+                  {app.applicationName}
+                  <span className="text-muted-foreground ml-1">
+                    {formatVelocityTrend(app.velocityTrend)}
+                  </span>
+                </Badge>
+              </Link>
+            ))}
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -191,34 +163,33 @@ export function EffortBreakdownChart({ stats }: { stats: VelocityEffortStats }) 
     { label: "Commits (30d)", value: stats.commitsLast30Days, fill: "hsl(142 71% 45%)" },
     { label: "Tasks done (30d)", value: stats.tasksCompletedLast30Days, fill: "hsl(217 91% 60%)" },
     { label: "Board edits (7d)", value: stats.boardEditsLast7Days, fill: "hsl(38 92% 50%)" },
-    {
-      label: "Hours logged",
-      value: Math.round(stats.spentHours),
-      fill: "hsl(262 83% 58%)",
-    },
+    { label: "Hours logged", value: Math.round(stats.spentHours), fill: "hsl(262 83% 58%)" },
   ];
+
+  const total = data.reduce((sum, entry) => sum + entry.value, 0);
 
   return (
     <Card className="shadow-sm">
       <CardHeader>
-        <CardTitle className="text-base">Effort signals</CardTitle>
-        <p className="text-muted-foreground text-xs">
-          Composite view of coding commits, task completion, and logged hours.
-        </p>
+        <MetricCardTitle id="effortSignals" />
       </CardHeader>
       <CardContent>
-        <ChartContainer config={effortBreakdownConfig} className="h-[220px] w-full">
-          <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
-            <XAxis type="number" allowDecimals={false} />
-            <YAxis type="category" dataKey="label" width={110} tick={{ fontSize: 11 }} />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar dataKey="value" radius={4}>
-              {data.map((entry) => (
-                <Cell key={entry.label} fill={entry.fill} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ChartContainer>
+        {total === 0 ? (
+          <ChartEmpty message="No effort signals yet. Sync a repo, log task hours, or move cards on a board." />
+        ) : (
+          <ChartContainer config={effortBreakdownConfig} className="h-[220px] w-full">
+            <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
+              <XAxis type="number" allowDecimals={false} />
+              <YAxis type="category" dataKey="label" width={110} tick={{ fontSize: 11 }} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Bar dataKey="value" radius={4}>
+                {data.map((entry) => (
+                  <Cell key={entry.label} fill={entry.fill} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );
@@ -230,35 +201,36 @@ export function LifecycleTimeoutCard({ stats }: { stats: VelocityEffortStats }) 
   return (
     <Card className="shadow-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <AlertTriangle className="size-4 text-amber-500" />
-          Lifecycle phase timing
-        </CardTitle>
-        <p className="text-muted-foreground text-xs">
-          Phase durations follow playbook guidelines (Kanboard lead-time + monthly review). Low velocity may explain overdue phases.
-        </p>
+        <MetricCardTitle id="lifecycleTiming" icon="alert" iconClassName="text-amber-500" />
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-2">
         {alerts.length === 0 ? (
-          <p className="text-muted-foreground text-sm">All lifecycle phases are within recommended windows.</p>
+          <p className="text-muted-foreground text-sm">
+            All lifecycle phases are within recommended windows.
+          </p>
         ) : (
           alerts.slice(0, 5).map((alert) => (
             <Link
               key={alert.applicationId}
               href={`/applications/${alert.applicationId}`}
               className={cn(
-                "block rounded-md border p-3 text-sm transition-colors hover:bg-muted/50",
-                alert.isOverdue && "border-red-200 bg-red-50/50 dark:border-red-900/40 dark:bg-red-950/20"
+                "hover:bg-muted/50 hover:border-foreground/20 block rounded-md border p-2.5 text-sm transition-colors",
+                alert.isOverdue &&
+                  "border-red-500/30 bg-red-500/[0.04] dark:border-red-900/40 dark:bg-red-950/20"
               )}
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="font-medium">{alert.applicationName}</span>
-                <Badge variant={alert.isOverdue ? "destructive" : "secondary"} className="text-[10px]">
+                <span className="truncate font-medium">{alert.applicationName}</span>
+                <Badge
+                  variant={alert.isOverdue ? "destructive" : "secondary"}
+                  className="shrink-0 text-[10px]"
+                >
                   {LIFECYCLE_PHASE_LABELS[alert.lifecyclePhase]}
                 </Badge>
               </div>
-              <p className="text-muted-foreground mt-1 text-xs">
-                Day {alert.daysInPhase} of {alert.maxDays} recommended — {alert.isOverdue ? "overdue" : "review due"}
+              <p className="text-muted-foreground mt-0.5 text-xs">
+                Day {alert.daysInPhase} of {alert.maxDays} recommended —{" "}
+                {alert.isOverdue ? "overdue" : "review due"}
               </p>
             </Link>
           ))
@@ -270,7 +242,7 @@ export function LifecycleTimeoutCard({ stats }: { stats: VelocityEffortStats }) 
 
 export function VelocityMeasurementNote({ stats }: { stats: VelocityEffortStats }) {
   return (
-    <p className="text-muted-foreground rounded-lg border border-dashed bg-muted/20 p-3 text-xs leading-relaxed">
+    <p className="text-muted-foreground/80 bg-muted/20 rounded-lg border border-dashed p-3 text-[11px] leading-relaxed">
       {stats.measurementNote}
     </p>
   );

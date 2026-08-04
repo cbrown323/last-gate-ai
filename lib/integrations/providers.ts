@@ -20,14 +20,14 @@ export const INTEGRATION_PROVIDERS: IntegrationProviderDefinition[] = [
         },
       },
       {
-        title: "Add to your local environment",
+        title: "Save the token in API keys",
         description:
-          "Paste the token into .env.local as GITHUB_TOKEN=ghp_... then restart npm run dev.",
+          "In the API keys section above, paste your token into GitHub token and click Save. Restart npm run dev if Re-check still fails.",
       },
       {
-        title: "Verify connection",
+        title: "Confirm and add an application",
         description:
-          "Click Verify below. Then register an application with your repo URL and use Sync now on the Overview tab.",
+          "Click Re-check below to verify the token. Then open Applications and use Import from GitHub or Add application.",
       },
     ],
   },
@@ -50,12 +50,14 @@ export const INTEGRATION_PROVIDERS: IntegrationProviderDefinition[] = [
         },
       },
       {
-        title: "Add the key to .env.local",
-        description: "Restart the dev server after saving. Offline templates work without a key.",
+        title: "Save the key in API keys",
+        description:
+          "Paste your key in the API keys section above and click Save. Restart npm run dev if features do not update immediately.",
       },
       {
         title: "Test on any application",
-        description: "Open an app → AI Summary tab → Generate.",
+        description:
+          "Open an application → Intelligence → AI Summary and click Generate.",
       },
     ],
   },
@@ -77,9 +79,9 @@ export const INTEGRATION_PROVIDERS: IntegrationProviderDefinition[] = [
         },
       },
       {
-        title: "Create an access token",
+        title: "Save the token in API keys",
         description:
-          "Vercel dashboard → Settings → Tokens. Add VERCEL_TOKEN to .env.local for API access from Last Gate.",
+          "Vercel dashboard → Settings → Tokens. Paste the token in the API keys section above as Vercel token and click Save.",
         link: {
           label: "Create Vercel token",
           href: "https://vercel.com/account/settings/tokens",
@@ -88,7 +90,7 @@ export const INTEGRATION_PROVIDERS: IntegrationProviderDefinition[] = [
       {
         title: "Connect your app",
         description:
-          "Set websiteUrl on your application or log a deployment on the Deployments tab. Last Gate auto-detects vercel.json in the repo.",
+          "Set websiteUrl on your application or log a deployment under Intelligence → Deployments. Last Gate auto-detects vercel.json in the repo.",
       },
     ],
   },
@@ -110,13 +112,14 @@ export const INTEGRATION_PROVIDERS: IntegrationProviderDefinition[] = [
         },
       },
       {
-        title: "Add RAILWAY_TOKEN to .env.local",
-        description: "Restart the dev server, then verify below.",
+        title: "Save the token in API keys",
+        description:
+          "Paste the token in the API keys section above as Railway token and click Save. Restart npm run dev, then Re-check below.",
       },
       {
         title: "Detect from repo",
         description:
-          "On your application → Deployments tab → Detect from repo. Last Gate finds railway.toml automatically.",
+          "On your application → Intelligence → Deployments → Detect from repo. Last Gate finds railway.toml automatically.",
       },
     ],
   },

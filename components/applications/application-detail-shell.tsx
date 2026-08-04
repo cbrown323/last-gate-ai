@@ -5,15 +5,14 @@ import { ApplicationDetailProvider } from "@/components/applications/application
 import { ApplicationAdvancedPanel } from "@/components/applications/application-advanced-panel";
 import { ApplicationIntelligenceSection } from "@/components/applications/application-intelligence-section";
 import { ProjectIntelligenceGuide } from "@/components/applications/project-intelligence-guide";
+import { useIntelligenceAnalysis } from "@/components/applications/use-intelligence-analysis";
 import {
   ApplicationDetailTabs,
   type ApplicationTabValue,
   type IntelligenceTabValue,
 } from "@/components/applications/application-detail-tabs";
 import {
-  countCompletedSteps,
   INTELLIGENCE_STEPS,
-  isAnalysisComplete,
   type IntelligenceProgress,
 } from "@/lib/applications/intelligence-workflow";
 import { TabsContent } from "@/components/ui/tabs";
@@ -60,16 +59,6 @@ export function ApplicationDetailShell({
   const [tab, setTab] = useState<ApplicationTabValue>("overview");
   const [intelligenceTab, setIntelligenceTab] = useState<IntelligenceTabValue>("stack");
   const [progress, setProgress] = useState<IntelligenceProgress>(initialProgress);
-  const [running, setRunning] = useState(false);
-
-  const completedCount = countCompletedSteps(progress, repoUrl);
-  const analysisComplete = isAnalysisComplete(progress, repoUrl);
-
-  useEffect(() => {
-    if (!running) {
-      setProgress(initialProgress);
-    }
-  }, [initialProgress, running]);
 
   const onProgressChange = useCallback((next: IntelligenceProgress) => {
     setProgress(next);
@@ -80,6 +69,23 @@ export function ApplicationDetailShell({
     setIntelligenceTab(stepTab);
   }, []);
 
+  const analysis = useIntelligenceAnalysis({
+    applicationId,
+    repoUrl,
+    progress,
+    onProgressChange,
+    onStepTab,
+  });
+
+  const completedCount = analysis.completedCount;
+  const analysisComplete = analysis.analysisComplete;
+
+  useEffect(() => {
+    if (!analysis.running) {
+      setProgress(initialProgress);
+    }
+  }, [initialProgress, analysis.running]);
+
   return (
     <ApplicationDetailProvider
       value={{
@@ -87,28 +93,44 @@ export function ApplicationDetailShell({
         setTab,
         intelligenceTab,
         setIntelligenceTab,
-        hidePanelActions: true,
+        hidePanelActions: false,
       }}
     >
       <div className="space-y-4">
+        <div className="sticky top-0 z-10 -mx-1 bg-background/95 px-1 pb-1 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <ProjectIntelligenceGuide
+            repoUrl={repoUrl}
+            progress={progress}
+            running={analysis.running}
+            activeStepId={analysis.activeStepId}
+            error={analysis.error}
+            activeStepDescription={analysis.activeStepDescription}
+            completedCount={analysis.completedCount}
+            totalSteps={analysis.totalSteps}
+            analysisComplete={analysis.analysisComplete}
+            ctaLabel={analysis.ctaLabel}
+            ctaHint={analysis.ctaHint}
+            canRun={analysis.canRun}
+            onRunAnalysis={() => analysis.runAnalysis(analysis.analysisComplete)}
+            onStepTab={onStepTab}
+          />
+        </div>
+
         <ApplicationAdvancedPanel
           completedSteps={completedCount}
           totalSteps={INTELLIGENCE_STEPS.length}
           analysisComplete={analysisComplete}
         >
-          <ProjectIntelligenceGuide
-            applicationId={applicationId}
-            repoUrl={repoUrl}
-            progress={progress}
-            running={running}
-            onRunningChange={setRunning}
-            onProgressChange={onProgressChange}
-            onStepTab={onStepTab}
-          />
           {advancedContent}
         </ApplicationAdvancedPanel>
 
-        <ApplicationDetailTabs tab={tab} onTabChange={setTab}>
+        <ApplicationDetailTabs
+          tab={tab}
+          onTabChange={setTab}
+          intelligenceCompletedCount={completedCount}
+          intelligenceTotalSteps={INTELLIGENCE_STEPS.length}
+          analysisComplete={analysisComplete}
+        >
           <TabsContent value="overview" className="mt-4 space-y-4">
             {overviewContent}
           </TabsContent>
@@ -118,6 +140,9 @@ export function ApplicationDetailShell({
               repoUrl={repoUrl}
               intelligenceTab={intelligenceTab}
               onIntelligenceTabChange={setIntelligenceTab}
+              progress={progress}
+              analysisComplete={analysisComplete}
+              analysisCtaHint={analysis.ctaHint}
               stackScan={stackScan}
               architectureMap={architectureMap}
               gitMeta={gitMeta}

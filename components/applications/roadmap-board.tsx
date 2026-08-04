@@ -110,7 +110,7 @@ export function RoadmapBoard({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-sm">
-          Plan work in epics with date ranges — inspired by Helper&apos;s roadmap view.
+          Plan work in epics with date ranges on the roadmap timeline.
         </p>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger

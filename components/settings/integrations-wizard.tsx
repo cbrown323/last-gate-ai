@@ -118,10 +118,10 @@ function IntegrationStepCard({
             {ready ? (
               <p className="text-muted-foreground text-sm">
                 {provider.state === "verified" && provider.accountLabel
-                  ? `Connected as ${provider.accountLabel} — no further setup needed.`
+                  ? `Connected as ${provider.accountLabel}. No further setup needed.`
                   : provider.state === "verified"
-                    ? "Verified and working — no further setup needed."
-                    : "Environment configured — you're good to go."}
+                    ? "Verified and working. No further setup needed."
+                    : "Environment configured. You're good to go."}
               </p>
             ) : (
               <p className="text-muted-foreground text-sm">{provider.description}</p>
@@ -231,7 +231,7 @@ function IntegrationStepCard({
               ) : (
                 <>
                   <RefreshCw className="mr-1 size-4" />
-                  {ready ? "Re-check" : "Verify"}
+                  Re-check
                 </>
               )}
             </Button>
@@ -334,9 +334,9 @@ export function IntegrationsWizard() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground text-sm">
-            Link GitHub, deployment platforms, and AI in a few guided steps. Tokens stay in{" "}
-            <code className="rounded bg-muted px-1">.env.local</code> — never in the browser or
-            database.
+            Paste keys in the <strong className="font-medium text-foreground">API keys</strong> section
+            above. They save to <code className="rounded bg-muted px-1">.env.local</code> on this
+            machine only, never in the browser cache or database.
           </p>
 
           {overview ? (
@@ -362,13 +362,13 @@ export function IntegrationsWizard() {
             <p className="text-sm">
               GitHub is configured.{" "}
               <Link href="/applications" className="text-emerald-600 underline">
-                Add an application
+                Open Applications
               </Link>{" "}
-              with a repo URL to start syncing.
+              and use Import from GitHub or Add application to start syncing.
             </p>
           ) : (
             <p className="text-sm">
-              Start with GitHub — it unlocks repo sync, stack scans, and deployment detection.
+              Start with GitHub to unlock repo sync, stack scans, and deployment detection.
             </p>
           )}
         </CardContent>
@@ -388,13 +388,20 @@ export function IntegrationsWizard() {
         <ol className="list-inside list-decimal space-y-1">
           <li>
             <Link href="/applications" className="text-emerald-600 underline">
-              Register an application
-            </Link>{" "}
-            with your GitHub repo URL
+              Applications
+            </Link>
+            : Import from GitHub or Add application
           </li>
-          <li>Overview tab → Sync now for live git stats</li>
-          <li>Stack tab → Scan repo · Architecture tab → Map architecture</li>
-          <li>Deployments tab → Detect from repo (finds vercel.json, railway.toml, etc.)</li>
+          <li>
+            Open the app and click Run full analysis (git sync, stack scan, AI summary, and more)
+          </li>
+          <li>
+            Or run steps individually under Intelligence → Git (Sync now), Stack (Scan repo),
+            Architecture (Map architecture)
+          </li>
+          <li>
+            Intelligence → Deployments → Detect from repo (finds vercel.json, railway.toml, etc.)
+          </li>
         </ol>
       </SettingsDocumentationCard>
     </div>

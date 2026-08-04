@@ -5,8 +5,8 @@ import type { LifecyclePhase } from "@/types";
  *
  * References (prior research for Last Gate PM buildout):
  * - Playbook: monthly phase review; stale backlog triage at 30 days
- * - Kanboard: lead/cycle time analytics — phases should not drift indefinitely
- * - Lean startup: time-box discovery; Helper: project date ranges on epics
+ * - Lead/cycle time analytics: phases should not drift indefinitely
+ * - Lean startup: time-box discovery; epic date ranges on the roadmap
  */
 export const LIFECYCLE_PHASE_MAX_DAYS: Record<LifecyclePhase, number> = {
   discovery: 21,
@@ -59,7 +59,7 @@ export function getLifecyclePhaseTiming(
 
   let message: string;
   if (isOverdue) {
-    message = `This phase has exceeded the ${maxDays}-day guideline. Advance the lifecycle or document why you're staying — long phases often signal scope drift (Kanboard lead-time anti-pattern).`;
+    message = `This phase has exceeded the ${maxDays}-day guideline. Advance the lifecycle or document why you're staying. Long phases often signal scope drift.`;
   } else if (needsReview) {
     const remaining = maxDays - daysInPhase;
     message = `Day ${daysInPhase} of ~${maxDays} recommended for ${phase}. Review progress in the next ${remaining} day${remaining === 1 ? "" : "s"} or advance when exit criteria are met.`;
@@ -80,4 +80,4 @@ export function getLifecyclePhaseTiming(
 }
 
 export const VELOCITY_EFFORT_MEASUREMENT_NOTE =
-  "Velocity combines repo commits (last 7/30 days) and tasks completed on the board. Effort combines logged task hours, estimates, and board edits — inspired by Kanboard time tracking and Helper timesheets. Sync GitHub and move tasks to Done for accurate signals.";
+  "Velocity combines repo commits (last 7/30 days) and tasks completed on the board. Effort combines logged task hours, estimates, and board edits. Sync GitHub and move tasks to Done for accurate signals.";

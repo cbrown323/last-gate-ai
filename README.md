@@ -18,32 +18,29 @@ cp .env.example .env.local
 
 npm install
 npx prisma migrate dev
-npm run db:seed
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) for the portfolio dashboard (`/dashboard` redirects to `/`).
 
-### Connect integrations (recommended)
+### Connect integrations
 
-Use **Settings → Connect your stack** for a guided wizard (GitHub → AI → Vercel → Railway). See [`workflow_guide/INTEGRATIONS_WORKFLOW.md`](workflow_guide/INTEGRATIONS_WORKFLOW.md) for the full workflow.
+Use **Settings** for the guided wizard (GitHub → AI → Vercel → Railway). See [`workflow_guide/INTEGRATIONS_WORKFLOW.md`](workflow_guide/INTEGRATIONS_WORKFLOW.md) for the full workflow.
 
-### Preview without integrations (recommended first)
+### First application
 
-No `GITHUB_TOKEN` or AI keys needed — load the dry-run demo:
-
-```bash
-npm run db:seed
-```
-
-Or from the **Dashboard** / **Settings** banner, click **Load demo preview**. Then open **Last Gate AI (demo)** and explore every tab (Stack, Architecture, Security, Headroom, Deployments, Kanban).
+1. **Applications** → **Import from GitHub** (with `GITHUB_TOKEN` set) or register an app manually with your GitHub repo URL.
+2. **Settings** → verify GitHub and AI integrations (add keys to `.env.local`, restart `npm run dev`).
+3. Open the app → **Run full analysis** or use **Intelligence** sub-tabs step by step.
 
 ### Test live AI summaries
 
-1. Open **Settings** — confirm **AI integration status** shows **Ready** (or add a key and restart `npm run dev`).
-2. Go to **Applications** → open **Last Gate AI (demo)** (from seed) or create your own app with a GitHub repo URL.
-3. Optional: **Overview** tab → **Sync now** (needs `GITHUB_TOKEN`) for richer context.
-4. **AI Summary** tab → **Generate** — live AI when a key is set; offline template otherwise.
+1. **Settings** — confirm AI integration shows configured (add a key and restart `npm run dev` if needed).
+2. **Applications** → open an app with a linked repo.
+3. **Overview** → sync git stats (needs `GITHUB_TOKEN`) for richer context.
+4. **Intelligence** → **AI Summary** → **Generate** — live AI when a key is set; offline template otherwise.
+
+To remove a legacy demo app from an older database: `npm run db:seed`
 
 ## Workflow
 

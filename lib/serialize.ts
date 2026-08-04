@@ -310,7 +310,7 @@ export function serializeSecurityReport(
     findings: report.findings as SecurityReportResult["findings"],
     score: report.score,
     summary: report.summary,
-    mode: report.mode as "ai" | "offline" | "demo",
+    mode: report.mode === "ai" ? "ai" : "offline",
     generatedAt: report.generatedAt.toISOString(),
   };
 }
@@ -334,7 +334,7 @@ export function serializeHeadroomReport(
     score: report.score,
     summary: report.summary,
     recommendations: report.recommendations as string[],
-    mode: report.mode as "ai" | "offline" | "demo",
+    mode: report.mode === "ai" ? "ai" : "offline",
     generatedAt: report.generatedAt.toISOString(),
   };
 }

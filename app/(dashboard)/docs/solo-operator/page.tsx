@@ -70,15 +70,15 @@ const loop: {
 }[] = [
   {
     step: "1",
-    title: "Read your two docs first",
+    title: "Start from written memory",
     icon: BookMarked,
     theme: "sky",
     summary:
-      "Every session starts by re-reading the system map and the dev log. That's the whole memory of the project — open them before you write a single line.",
+      "Every session starts from durable context: the agent rules file, the system map, and the dev log. That written memory is what the agent reads instead of guessing at your codebase.",
     points: [
+      "Keep an AGENTS.md rules file current so every session inherits your conventions automatically.",
       "A system map: stack, directory layout, data model, known issues.",
-      "A dev log: what changed last session, decisions made, follow-ups.",
-      "Attach both to the chat so the agent isn't guessing at your codebase.",
+      "A dev log: what changed last session, decisions made, open follow-ups.",
     ],
   },
   {
@@ -87,37 +87,37 @@ const loop: {
     icon: PencilRuler,
     theme: "violet",
     summary:
-      "If the change is obvious, just build it. If the scope is unclear or touches the schema, drop into Plan mode and sketch the contract first.",
+      "If the change is obvious, just build it. If the scope is unclear, touches the schema, or has real trade-offs, run a planning pass and agree on the approach before any code is written.",
     points: [
-      "Small, clear change → skip straight to building.",
-      "New model, new API surface, or cross-cutting change → plan it first.",
-      "Lock the TypeScript types / Prisma shape before touching downstream code.",
+      "Small, clear change: skip straight to building.",
+      "New model, new API surface, or cross-cutting change: write the plan or spec first.",
+      "Lock the contract (TypeScript types, Prisma shape, API routes) before touching downstream code.",
     ],
   },
   {
     step: "3",
-    title: "Build in one focused session",
+    title: "Delegate outcomes, not keystrokes",
     icon: Hammer,
     theme: "amber",
     summary:
-      "One chat, one chunk of work — a phase, a feature, a fix. Attach only the few files it touches and let the agent do the edit.",
+      "One session, one finishable chunk of work. State the goal and the acceptance criteria, then let the agent search the codebase and make the edits. Modern agents find the right files better than a pasted file list.",
     points: [
-      "Scope a session to something you can finish and verify in one sitting.",
-      "Attach 3–5 real, verified paths — not the whole tree.",
-      "Keep edits surgical; don't let it refactor unrelated code.",
+      "Scope a session to something you can finish and review in one sitting.",
+      "Describe what done looks like, including how to verify it.",
+      "Set boundaries up front: name the files or areas the agent must not touch.",
     ],
   },
   {
     step: "4",
-    title: "Verify before you trust it",
+    title: "Verify with evidence, then review the diff",
     icon: ShieldCheck,
     theme: "emerald",
     summary:
-      "Run the build and click through the actual flow. \"It compiled\" is not \"it works.\" This is the step vibe coders skip and then can't debug.",
+      "Make the agent prove its own work: run the build, run the checks, walk the flow. Then read the diff yourself. \"It compiled\" is not \"it works,\" and a summary is not a review.",
     points: [
-      "Run npm run build — catch type errors before they pile up.",
-      "Run npm run dev and walk the real user flow you just changed.",
-      "If it breaks, fix it now while the context is still in the chat.",
+      "Have the agent run npm run build and fix what breaks while the context is hot.",
+      "Walk the real user flow you just changed before trusting it.",
+      "Review the actual diff before committing. You are the editor, not a spectator.",
     ],
   },
   {
@@ -126,26 +126,26 @@ const loop: {
     icon: Save,
     theme: "teal",
     summary:
-      "Write a few lines in the dev log — completed, decisions, follow-ups — then commit a clean checkpoint. Future-you (and any agent) reads this next time.",
+      "Write a few lines in the dev log (completed, decisions, follow-ups), then commit a small, reviewable checkpoint. Future sessions, human or agent, start from this.",
     points: [
       "Note what you finished, what you decided, and what's still open.",
-      "Park ideas you can't do now in a Deferred / Known-debt list — don't lose them.",
-      "Commit with a clear message so each session is a recoverable checkpoint.",
+      "Park ideas you can't do now in a Deferred / Known-debt list so they aren't lost.",
+      "Commit small and often; every clean checkpoint is a recovery point.",
     ],
   },
 ];
 
 const habits = [
-  "Treat the dev log + system map as the project's brain. If it's not written down, it doesn't exist next session.",
-  "One session = one finishable chunk. When the chat gets long or loses the thread, commit and start fresh.",
-  "Verify with a build and a real click-through every time — not just when something feels off.",
-  "Park what you can't do now. A written 'Deferred' line beats a half-built feature you forgot about.",
+  "Treat AGENTS.md, the system map, and the dev log as the project's brain. If it's not written down, it doesn't exist next session.",
+  "One session, one finishable chunk. When the chat gets long or loses the thread, commit and start fresh.",
+  "Verify with a build and a real click-through every time, and read the diff before you commit.",
+  "Feed corrections back into the rules file. If you fix the same agent mistake twice, it belongs in AGENTS.md.",
 ];
 
 const mistakes = [
-  "Building for hours in one giant chat until the model forgets your codebase.",
-  "Skipping the build/click-through, so bugs stack up and become untraceable.",
-  "Never writing anything down — every session restarts from zero context.",
+  "Building for hours in one giant chat until the model loses track of your codebase.",
+  "Accepting the agent's summary without reading the diff or running the app.",
+  "Never writing anything down, so every session restarts from zero context.",
   "Letting the agent rewrite unrelated files because the scope was never set.",
 ];
 
@@ -154,7 +154,7 @@ export default function SoloOperatorPage() {
     <div className="space-y-8">
       <PageHeader
         title="Solo Operator workflow"
-        description="How to structure development when you're the whole team — a lightweight loop you can actually run on every change."
+        description="How to structure development when you're the whole team: a lightweight agentic loop you can actually run on every change."
       />
 
       <Card className="border-sky-200/50 bg-sky-50/20 dark:bg-sky-950/10">
@@ -169,14 +169,15 @@ export default function SoloOperatorPage() {
             You don&rsquo;t need a six-agent org chart to ship. What actually keeps a solo project
             from collapsing is boring and repeatable:{" "}
             <strong className="text-foreground">
-              read your docs, work in focused sessions, verify, then log and commit.
+              give the agent written memory, delegate outcomes in focused sessions, verify with
+              evidence, then log and commit.
             </strong>{" "}
             That&rsquo;s the loop below.
           </p>
           <p>
-            The reason most &ldquo;vibe coders&rdquo; get stuck isn&rsquo;t a lack of process — it&rsquo;s
-            no written memory and no verification. Fix those two things and you can debug your own
-            work and explain it to anyone.
+            The reason most &ldquo;vibe coders&rdquo; get stuck isn&rsquo;t a lack of process.
+            It&rsquo;s no written memory and no verification. Fix those two things and you can
+            debug your own work and explain it to anyone.
           </p>
         </CardContent>
       </Card>
@@ -264,16 +265,16 @@ export default function SoloOperatorPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Users className="size-4 text-amber-600" />
-            When to escalate to the multi-agent setup
+            When to scale beyond one agent
           </CardTitle>
         </CardHeader>
         <CardContent className="text-muted-foreground space-y-2 text-sm">
           <p>
-            The full Foreman + role-agents workflow (plan in one chat, split builders by role) is
-            real, but it&rsquo;s overkill for day-to-day work. Reach for it{" "}
-            <strong className="text-foreground">only</strong> when a feature is big enough to span
-            clearly separate areas — say frontend, API, and schema — and you&rsquo;ve already proven
-            the change with one clean session.
+            Parallel and background agents are real, but they&rsquo;re overkill for day-to-day
+            work. Reach for them <strong className="text-foreground">only</strong> when a feature
+            spans clearly separate areas (say frontend, API, and schema), keep their file sets
+            disjoint, and serialize anything that touches shared contracts like the Prisma schema
+            or shared types. A separate review pass on the final diff is cheap insurance.
           </p>
           <p>
             For 90% of solo work, the five-step loop above is the whole system. Don&rsquo;t add

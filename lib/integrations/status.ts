@@ -65,8 +65,8 @@ async function buildProviderStatus(
   } else if (!configured) {
     message =
       def.envVars.length === 1
-        ? `Add ${def.envVars[0]} to .env.local`
-        : `Add one of: ${def.envVars.join(" or ")}`;
+        ? `Add ${def.envVars[0]} in the API keys section above`
+        : `Add one of these in the API keys section above: ${def.envVars.join(" or ")}`;
   }
 
   return {

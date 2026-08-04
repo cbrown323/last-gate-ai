@@ -229,7 +229,7 @@ export interface SecurityReportResult {
   findings: SecurityFinding[];
   score: number;
   summary: string;
-  mode: "ai" | "offline" | "demo";
+  mode: "ai" | "offline";
   generatedAt: string;
 }
 
@@ -239,7 +239,7 @@ export interface HeadroomReportResult {
   score: number;
   summary: string;
   recommendations: string[];
-  mode: "ai" | "offline" | "demo";
+  mode: "ai" | "offline";
   generatedAt: string;
 }
 

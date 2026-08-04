@@ -1,6 +1,5 @@
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../lib/generated/prisma/client";
-import { loadDemoPreview } from "../lib/demo/load-preview";
 
 const adapter = new PrismaBetterSqlite3({
   url: process.env.DATABASE_URL ?? "file:./dev.db",
@@ -8,8 +7,20 @@ const adapter = new PrismaBetterSqlite3({
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  const result = await loadDemoPreview();
-  console.log("Demo preview loaded for:", result.name, `(${result.applicationId})`);
+  const removed = await prisma.application.deleteMany({
+    where: {
+      OR: [
+        { name: { contains: "(demo)" } },
+        { repoUrl: { contains: "github.com/demo/" } },
+      ],
+    },
+  });
+
+  if (removed.count > 0) {
+    console.log(`Removed ${removed.count} legacy demo application(s).`);
+  }
+
+  console.log("Seed complete. Register applications at /applications and connect integrations in Settings.");
 }
 
 main()

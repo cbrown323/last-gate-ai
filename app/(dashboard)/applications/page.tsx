@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { ApplicationCard } from "@/components/applications/application-card";
 import { ApplicationFormDialog } from "@/components/applications/application-form";
+import { GitHubImportDialog } from "@/components/applications/github-import-dialog";
 import { getApplications } from "@/lib/portfolio";
 import { serializeApplication } from "@/lib/serialize";
 
@@ -12,7 +13,12 @@ export default async function ApplicationsPage() {
       <PageHeader
         title="Applications"
         description="Your software portfolio registry"
-        actions={<ApplicationFormDialog />}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <GitHubImportDialog />
+            <ApplicationFormDialog />
+          </div>
+        }
       />
       {applications.length === 0 ? (
         <div className="rounded-lg border border-dashed p-12 text-center">

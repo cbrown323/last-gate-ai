@@ -24,7 +24,7 @@ export function AiSummaryPanel({
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState(latestSummary?.content ?? "");
   const [generatedAt, setGeneratedAt] = useState(latestSummary?.generatedAt ?? "");
-  const [lastMode, setLastMode] = useState<"ai" | "offline" | "demo" | null>(null);
+  const [lastMode, setLastMode] = useState<"ai" | "offline" | null>(null);
   const [aiStatus, setAiStatus] = useState<AiStatus | null>(null);
   const detail = useApplicationDetailOptional();
   const hideActions = detail?.hidePanelActions ?? false;
@@ -93,30 +93,34 @@ export function AiSummaryPanel({
             <code className="rounded bg-muted px-1">OPENAI_API_KEY</code> to enable live AI.
           </p>
         ) : null}
-        {lastMode === "demo" ? (
-          <p className="text-muted-foreground mb-2 text-xs">
-            Demo preview summary — pre-filled without a live AI call. Reload from the dashboard banner or run{" "}
-            <code className="rounded bg-muted px-1">npm run db:seed</code>.
-          </p>
-        ) : null}
         {generatedAt ? (
           <p className="text-muted-foreground mb-2 text-xs">
             Last generated {new Date(generatedAt).toLocaleString()}
-            {lastMode === "ai" ? " · live AI" : lastMode === "demo" ? " · demo preview" : ""}
+            {lastMode === "ai" ? " · live AI" : ""}
           </p>
         ) : null}
         {content ? (
           <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap text-sm">
             {content}
           </div>
-        ) : hideActions ? (
-          <p className="text-muted-foreground text-sm">
-            Use <span className="font-medium text-foreground">Start product analysis</span> above to generate an intelligence summary from repo metadata and README.
-          </p>
         ) : (
-          <p className="text-muted-foreground text-sm">
-            Generate an intelligence summary from repo metadata and README. Requires an API key for live AI output.
-          </p>
+          <div className="rounded-lg border border-dashed bg-muted/20 p-4 text-center">
+            <Sparkles className="text-muted-foreground mx-auto mb-2 size-8" />
+            <p className="font-medium">No summary yet</p>
+            <p className="text-muted-foreground mx-auto mt-1 max-w-md text-sm">
+              Click <span className="font-medium text-foreground">Generate</span> for a quick
+              AI summary from repo metadata and README, or run{" "}
+              <span className="font-medium text-foreground">full analysis</span> above for the full
+              intelligence pipeline.
+            </p>
+            {!aiStatus?.configured ? (
+              <p className="text-muted-foreground mt-2 text-xs">
+                Add <code className="rounded bg-muted px-1">AI_GATEWAY_API_KEY</code> or{" "}
+                <code className="rounded bg-muted px-1">OPENAI_API_KEY</code> in Settings for live
+                output.
+              </p>
+            ) : null}
+          </div>
         )}
       </CardContent>
     </Card>

@@ -11,7 +11,7 @@ export default function PlaybookPage() {
     <div className="space-y-8">
       <PageHeader
         title="Project management playbook"
-        description="Built-in guidance on product lifecycle, Kanban, Scrum, and delivery — so you don't have to guess how to run a project."
+        description="Built-in guidance on product lifecycle, Kanban, Scrum, AI-era workflows, and delivery, so you don't have to guess how to run a project."
       />
 
       <Card className="border-emerald-200/50 bg-emerald-50/20 dark:bg-emerald-950/10">
@@ -23,25 +23,11 @@ export default function PlaybookPage() {
         </CardHeader>
         <CardContent className="text-muted-foreground space-y-2 text-sm">
           <p>
-            Most people manage software without formal PM training. Last Gate integrates patterns from{" "}
-            <a
-              href="https://github.com/kanboard/kanboard"
-              className="text-emerald-600 underline"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Kanboard
-            </a>{" "}
-            (visual flow, WIP limits) and{" "}
-            <a
-              href="https://github.com/devaslanphp/project-management"
-              className="text-emerald-600 underline"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Helper
-            </a>{" "}
-            (dashboards, epics, roadmaps) — plus portfolio intelligence unique to this platform.
+            Most people manage software without formal PM training. Last Gate brings together
+            proven PM patterns (visual flow, WIP limits, dashboards, epics, roadmaps) with
+            portfolio intelligence unique to this platform. It also folds in the current playbook
+            from AI-era product and project managers: delegate the structured middle to agents,
+            keep judgment human, and measure AI features with evals instead of vibes.
           </p>
           <p>
             Set a <strong className="text-foreground">lifecycle phase</strong> on each application.

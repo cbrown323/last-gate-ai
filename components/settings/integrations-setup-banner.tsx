@@ -18,8 +18,8 @@ export function IntegrationsSetupBanner() {
             <p className="font-medium">Connect your integrations</p>
           </div>
           <p className="text-muted-foreground text-sm">
-            Link GitHub, Vercel, Railway, and AI in a guided setup — or load the demo preview to
-            explore without keys.
+            Link GitHub, Vercel, Railway, and AI in a guided setup to sync repos and run live
+            intelligence.
           </p>
         </div>
         <Link
