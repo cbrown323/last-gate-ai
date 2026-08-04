@@ -44,7 +44,15 @@ export default async function DashboardPage() {
     getPinnedApplications(),
   ]);
 
-  const attention = collectNeedsAttention(applications);
+  const attention = collectNeedsAttention(
+    applications.map((app) => ({
+      id: app.id,
+      name: app.name,
+      status: app.status,
+      repoUrl: app.repoUrl,
+      gitMeta: app.gitMeta,
+    }))
+  );
 
   const hiddenMetrics = collectHiddenMetrics({
     stats,
@@ -83,7 +91,7 @@ export default async function DashboardPage() {
               title="Portfolio composition"
               description="How your applications are split across the pipeline."
             />
-            <PortfolioStats stats={stats} hideZero />
+            <PortfolioStats stats={stats} attentionItems={attention} hideZero />
           </section>
           <section className="space-y-2">
             <MetricSectionHeading

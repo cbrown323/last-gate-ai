@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { Bar, BarChart, Cell, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,11 +10,14 @@ import {
 } from "@/components/ui/chart";
 import { ChartEmpty } from "@/components/charts/chart-empty";
 import { MetricCardTitle } from "@/components/dashboard/metric-info";
-import { MetricTile, MetricTileGrid } from "@/components/dashboard/metric-tile";
+import { MetricWorkflowRow } from "@/components/dashboard/metric-workflow-trigger";
+import { buildLifecycleWorkflow } from "@/lib/dashboard/metric-workflows";
 import { formatVelocityTrend } from "@/lib/pm/velocity-types";
 import type { VelocityEffortStats } from "@/types";
 import { LIFECYCLE_PHASE_LABELS } from "@/types";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { Bar, BarChart, Cell, XAxis, YAxis } from "recharts";
+import { MetricTile, MetricTileGrid } from "@/components/dashboard/metric-tile";
 
 const velocityChartConfig = {
   velocityScore: { label: "Velocity", color: "hsl(142 71% 45%)" },
@@ -210,29 +211,15 @@ export function LifecycleTimeoutCard({ stats }: { stats: VelocityEffortStats }) 
           </p>
         ) : (
           alerts.slice(0, 5).map((alert) => (
-            <Link
+            <MetricWorkflowRow
               key={alert.applicationId}
-              href={`/applications/${alert.applicationId}`}
-              className={cn(
-                "hover:bg-muted/50 hover:border-foreground/20 block rounded-md border p-2.5 text-sm transition-colors",
-                alert.isOverdue &&
-                  "border-red-500/30 bg-red-500/[0.04] dark:border-red-900/40 dark:bg-red-950/20"
-              )}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="truncate font-medium">{alert.applicationName}</span>
-                <Badge
-                  variant={alert.isOverdue ? "destructive" : "secondary"}
-                  className="shrink-0 text-[10px]"
-                >
-                  {LIFECYCLE_PHASE_LABELS[alert.lifecyclePhase]}
-                </Badge>
-              </div>
-              <p className="text-muted-foreground mt-0.5 text-xs">
-                Day {alert.daysInPhase} of {alert.maxDays} recommended —{" "}
-                {alert.isOverdue ? "overdue" : "review due"}
-              </p>
-            </Link>
+              workflow={buildLifecycleWorkflow(alert)}
+              title={alert.applicationName}
+              subtitle={`${LIFECYCLE_PHASE_LABELS[alert.lifecyclePhase]} · ${
+                alert.isOverdue ? "overdue" : "review due"
+              }`}
+              accent={alert.isOverdue ? "danger" : "warning"}
+            />
           ))
         )}
       </CardContent>

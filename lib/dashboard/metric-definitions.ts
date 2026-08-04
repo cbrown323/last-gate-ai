@@ -31,7 +31,7 @@ export const METRIC_DEFINITIONS = {
     label: "Needs attention",
     what: "Applications showing a staleness or backlog risk signal.",
     how: "Non-archived applications with no GitHub sync, no commit in 30 days, or more than 10 open issues.",
-    action: "Sync the repo or triage its issues to clear the flag.",
+    action: "Click a flagged application for step-by-step fix guidance.",
   },
   openTasks: {
     label: "Open tasks",
@@ -42,7 +42,7 @@ export const METRIC_DEFINITIONS = {
     label: "Overdue",
     what: "Open tasks that have passed their due date.",
     how: "Unclosed, not-Done tasks whose due date is in the past.",
-    action: "Reschedule or close these first — they distort velocity.",
+    action: "Click an overdue task for step-by-step fix guidance.",
   },
   openIssues: {
     label: "GitHub issues",
@@ -113,7 +113,7 @@ export const METRIC_DEFINITIONS = {
     label: "Lifecycle phase timing",
     what: "Applications that have sat in one lifecycle phase too long.",
     how: "Compares days in the current phase against the playbook's recommended window.",
-    action: "Advance the phase or reset its start date after a review.",
+    action: "Click a flagged application for step-by-step fix guidance.",
   },
   needsAttentionApps: {
     label: "Applications needing attention",

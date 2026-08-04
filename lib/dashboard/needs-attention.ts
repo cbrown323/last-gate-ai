@@ -1,3 +1,5 @@
+export type AttentionKind = "not_synced" | "open_issues" | "no_commits" | "stale";
+
 const STALE_AFTER_MS = 30 * 24 * 60 * 60 * 1000;
 const BUSY_ISSUE_THRESHOLD = 10;
 
@@ -6,12 +8,16 @@ export type AttentionItem = {
   name: string;
   /** Human-readable cause, shown next to the application name. */
   reason: string;
+  kind: AttentionKind;
+  repoUrl?: string | null;
+  openIssues?: number;
 };
 
 type AttentionInput = {
   id: string;
   name: string;
   status: string;
+  repoUrl?: string | null;
   gitMeta?: { lastCommitAt: Date | string | null; openIssues: number | null } | null;
 };
 
@@ -32,11 +38,24 @@ export function collectNeedsAttention(applications: AttentionInput[]): Attention
     const isStale = lastCommitAt === null || Date.now() - lastCommitAt > STALE_AFTER_MS;
 
     if (!app.gitMeta) {
-      items.push({ id: app.id, name: app.name, reason: "Not synced with GitHub" });
+      items.push({
+        id: app.id,
+        name: app.name,
+        reason: "Not synced with GitHub",
+        kind: "not_synced",
+        repoUrl: app.repoUrl,
+      });
       continue;
     }
     if (openIssues > BUSY_ISSUE_THRESHOLD) {
-      items.push({ id: app.id, name: app.name, reason: `${openIssues} open issues` });
+      items.push({
+        id: app.id,
+        name: app.name,
+        reason: `${openIssues} open issues`,
+        kind: "open_issues",
+        repoUrl: app.repoUrl,
+        openIssues,
+      });
       continue;
     }
     if (isStale) {
@@ -44,6 +63,8 @@ export function collectNeedsAttention(applications: AttentionInput[]): Attention
         id: app.id,
         name: app.name,
         reason: lastCommitAt === null ? "No commit history" : "No commits in 30 days",
+        kind: lastCommitAt === null ? "no_commits" : "stale",
+        repoUrl: app.repoUrl,
       });
     }
   }

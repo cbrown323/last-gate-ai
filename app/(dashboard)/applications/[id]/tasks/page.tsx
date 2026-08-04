@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { PageHeader } from "@/components/layout/page-header";
 import { KanbanBoard } from "@/components/applications/kanban-board";
+import { TasksFocusGuide } from "@/components/applications/tasks-focus-guide";
 import { LifecycleBanner } from "@/components/applications/lifecycle-banner";
 import { serializeEpic, serializeTask } from "@/lib/serialize";
 import { cn } from "@/lib/utils";
@@ -16,10 +17,10 @@ export default async function ApplicationTasksPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ task?: string }>;
+  searchParams: Promise<{ task?: string; focus?: string }>;
 }) {
   const { id } = await params;
-  const { task: initialTaskId } = await searchParams;
+  const { task: initialTaskId, focus } = await searchParams;
   const application = await prisma.application.findUnique({
     where: { id },
     include: {
@@ -52,6 +53,7 @@ export default async function ApplicationTasksPage({
           </div>
         }
       />
+      <TasksFocusGuide focus={focus ?? null} />
       <LifecycleBanner
         applicationId={id}
         lifecyclePhase={application.lifecyclePhase as LifecyclePhase}

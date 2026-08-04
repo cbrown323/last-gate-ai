@@ -264,7 +264,12 @@ export function TaskDetailSheet({
                   onBlur={() => patch({ reference: reference || null })}
                 />
                 {task.reference ? (
-                  <Button variant="outline" size="icon" render={<a href={task.reference} target="_blank" rel="noreferrer" />}>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    nativeButton={false}
+                    render={<a href={task.reference} target="_blank" rel="noreferrer" />}
+                  >
                     <ExternalLink className="size-4" />
                   </Button>
                 ) : null}

@@ -28,10 +28,13 @@ import { formatDistanceToNow } from "date-fns";
 
 export default async function ApplicationDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string; intel?: string; focus?: string }>;
 }) {
   const { id } = await params;
+  const { tab, intel, focus } = await searchParams;
   const application = await prisma.application.findUnique({
     where: { id },
     include: {
@@ -80,6 +83,19 @@ export default async function ApplicationDetailPage({
       }
     : null;
 
+  const initialTab =
+    tab === "intelligence" || tab === "notes" || tab === "calendar" ? tab : undefined;
+  const initialIntelligenceTab =
+    intel === "git" ||
+    intel === "stack" ||
+    intel === "architecture" ||
+    intel === "summary" ||
+    intel === "security" ||
+    intel === "headroom" ||
+    intel === "deployments"
+      ? intel
+      : undefined;
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -102,6 +118,9 @@ export default async function ApplicationDetailPage({
         applicationId={id}
         repoUrl={application.repoUrl}
         initialProgress={intelligenceProgress}
+        initialTab={initialTab}
+        initialIntelligenceTab={initialIntelligenceTab}
+        initialFocus={focus ?? null}
         stackScan={stackScan}
         architectureMap={architectureMap}
         gitMeta={gitMeta}

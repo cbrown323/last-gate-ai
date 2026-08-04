@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, Suspense } from "react";
 import { ApplicationDetailProvider } from "@/components/applications/application-detail-context";
 import { ApplicationAdvancedPanel } from "@/components/applications/application-advanced-panel";
 import { ApplicationIntelligenceSection } from "@/components/applications/application-intelligence-section";
 import { ProjectIntelligenceGuide } from "@/components/applications/project-intelligence-guide";
 import { useIntelligenceAnalysis } from "@/components/applications/use-intelligence-analysis";
+import { ApplicationFocusGuide } from "@/components/applications/application-focus-guide";
 import {
   ApplicationDetailTabs,
   type ApplicationTabValue,
@@ -29,6 +30,9 @@ export function ApplicationDetailShell({
   applicationId,
   repoUrl,
   initialProgress,
+  initialTab,
+  initialIntelligenceTab,
+  initialFocus,
   advancedContent,
   overviewContent,
   notesContent,
@@ -44,6 +48,9 @@ export function ApplicationDetailShell({
   applicationId: string;
   repoUrl: string | null;
   initialProgress: IntelligenceProgress;
+  initialTab?: ApplicationTabValue;
+  initialIntelligenceTab?: IntelligenceTabValue;
+  initialFocus?: string | null;
   advancedContent: React.ReactNode;
   overviewContent: React.ReactNode;
   notesContent: React.ReactNode;
@@ -56,8 +63,10 @@ export function ApplicationDetailShell({
   headroomReport: HeadroomReportResult | null;
   deployments: DeploymentRecord[];
 }) {
-  const [tab, setTab] = useState<ApplicationTabValue>("overview");
-  const [intelligenceTab, setIntelligenceTab] = useState<IntelligenceTabValue>("stack");
+  const [tab, setTab] = useState<ApplicationTabValue>(initialTab ?? "overview");
+  const [intelligenceTab, setIntelligenceTab] = useState<IntelligenceTabValue>(
+    initialIntelligenceTab ?? "stack"
+  );
   const [progress, setProgress] = useState<IntelligenceProgress>(initialProgress);
 
   const onProgressChange = useCallback((next: IntelligenceProgress) => {
@@ -97,6 +106,9 @@ export function ApplicationDetailShell({
       }}
     >
       <div className="space-y-4">
+        <Suspense fallback={null}>
+          <ApplicationFocusGuide initialFocus={initialFocus} />
+        </Suspense>
         <div className="sticky top-0 z-10 -mx-1 bg-background/95 px-1 pb-1 backdrop-blur supports-[backdrop-filter]:bg-background/80">
           <ProjectIntelligenceGuide
             repoUrl={repoUrl}
