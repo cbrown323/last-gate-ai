@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       key: parsed.data.key,
       configured: saved?.configured ?? true,
       maskedPreview: saved?.maskedPreview ?? null,
-      message: "Saved to .env.local. Restart npm run dev if features don't update immediately.",
+      message: "Saved to .env.local and active immediately. Restart npm run dev only if features don't update.",
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to save API key";

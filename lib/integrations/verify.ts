@@ -1,5 +1,7 @@
+import { generateText } from "ai";
 import { getOctokit } from "@/lib/github/client";
 import { getAiConfig } from "@/lib/ai/config";
+import { getSummaryModel } from "@/lib/ai/model";
 import type { IntegrationProviderId } from "@/types/integrations";
 
 export type VerifyResult = {
@@ -42,11 +44,36 @@ export async function verifyAi(): Promise<VerifyResult> {
     };
   }
 
-  return {
-    ok: true,
-    accountLabel: config.provider,
-    message: `Configured (${config.provider}, ${config.model})`,
-  };
+  const model = getSummaryModel();
+  if (!model) {
+    return {
+      ok: false,
+      accountLabel: null,
+      message: "AI key is set but no model could be configured",
+    };
+  }
+
+  // A tiny live call so billing/quota problems surface here instead of
+  // silently degrading analysis to offline mode.
+  try {
+    await generateText({
+      model,
+      prompt: "Reply with the single word: ok",
+      maxOutputTokens: 8,
+    });
+    return {
+      ok: true,
+      accountLabel: config.provider,
+      message: `Live check passed (${config.provider}, ${config.model})`,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "AI request failed";
+    return {
+      ok: false,
+      accountLabel: config.provider,
+      message: `Key is set but a live request failed — check billing/quota with your provider. (${message})`,
+    };
+  }
 }
 
 export async function verifyVercel(): Promise<VerifyResult> {

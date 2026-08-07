@@ -159,7 +159,7 @@ function ApiKeyField({
       {error ? <p className="text-destructive text-xs">{error}</p> : null}
       {saved ? (
         <p className="text-emerald-700 text-xs dark:text-emerald-300">
-          Saved securely to .env.local. Masked above so your key stays private.
+          Saved to .env.local and active immediately. Masked above so your key stays private.
         </p>
       ) : null}
     </div>

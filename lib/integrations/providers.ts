@@ -11,23 +11,23 @@ export const INTEGRATION_PROVIDERS: IntegrationProviderDefinition[] = [
     features: ["Repo sync", "Stack scan", "Architecture map", "Deployment detection"],
     setupSteps: [
       {
-        title: "Create a personal access token",
+        title: "Create a GitHub Personal Access Token (required for private repos)",
         description:
-          "Open GitHub → Settings → Developer settings → Personal access tokens. Use fine-grained or classic token with repo read access.",
+          "Open GitHub → Settings → Developer settings → Personal access tokens. Fine-grained token: under Repository access select your repos (or all), then set Contents: Read and Metadata: Read. Classic token: select the repo scope. For org-owned private repos, also authorize the token for the org via SSO after creating it.",
         link: {
-          label: "Create token on GitHub",
+          label: "Create fine-grained token on GitHub",
           href: "https://github.com/settings/tokens?type=beta",
         },
       },
       {
-        title: "Save the token in API keys",
+        title: "Save the token below",
         description:
-          "In the API keys section above, paste your token into GitHub token and click Save. Restart npm run dev if Re-check still fails.",
+          "Paste the token into the field below and click Save. It's saved to .env.local and active immediately — no restart needed. Restart npm run dev only if Re-check still fails.",
       },
       {
         title: "Confirm and add an application",
         description:
-          "Click Re-check below to verify the token. Then open Applications and use Import from GitHub or Add application.",
+          "Click Re-check below to verify the token, and optionally test access to a specific private repo. Then open Applications and use Import from GitHub or Add application.",
       },
     ],
   },
@@ -52,7 +52,7 @@ export const INTEGRATION_PROVIDERS: IntegrationProviderDefinition[] = [
       {
         title: "Save the key in API keys",
         description:
-          "Paste your key in the API keys section above and click Save. Restart npm run dev if features do not update immediately.",
+          "Paste your key in the API keys section above and click Save. Keys are active immediately — restart npm run dev only if features do not update.",
       },
       {
         title: "Test on any application",
@@ -114,7 +114,7 @@ export const INTEGRATION_PROVIDERS: IntegrationProviderDefinition[] = [
       {
         title: "Save the token in API keys",
         description:
-          "Paste the token in the API keys section above as Railway token and click Save. Restart npm run dev, then Re-check below.",
+          "Paste the token in the API keys section above as Railway token and click Save, then Re-check below. Keys are active immediately.",
       },
       {
         title: "Detect from repo",

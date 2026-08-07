@@ -94,6 +94,26 @@ function applicationToForm(application: Omit<ApplicationFields, "id">): FormStat
   };
 }
 
+/**
+ * Verify the token can actually reach the repo before saving, so access
+ * problems (missing scope, org SSO, typo'd URL) surface now instead of at
+ * sync time. Returns an error message, or null when access is confirmed.
+ */
+async function checkRepoAccess(repoUrl: string): Promise<string | null> {
+  try {
+    const res = await fetch("/api/github/verify-repo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ repoUrl }),
+    });
+    const data = (await res.json()) as { ok?: boolean; message?: string };
+    if (!res.ok) return "Could not verify repository access";
+    return data.ok ? null : (data.message ?? "Repository is not accessible");
+  } catch {
+    return "Could not verify repository access";
+  }
+}
+
 function ApplicationFormFields({
   form,
   setForm,
@@ -236,12 +256,22 @@ export function ApplicationFormDialog() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     try {
+      if (form.repoUrl.trim()) {
+        const accessError = await checkRepoAccess(form.repoUrl.trim());
+        if (accessError) {
+          setError(accessError);
+          return;
+        }
+      }
+
       const res = await fetch("/api/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -251,6 +281,8 @@ export function ApplicationFormDialog() {
       setOpen(false);
       setForm(emptyForm);
       router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create");
     } finally {
       setLoading(false);
     }
@@ -270,6 +302,7 @@ export function ApplicationFormDialog() {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <ApplicationFormFields form={form} setForm={setForm} idPrefix="create" />
+          {error ? <p className="text-destructive text-sm">{error}</p> : null}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Creating..." : "Create application"}
           </Button>
@@ -283,18 +316,30 @@ export function ApplicationEditDialog({ application }: { application: Applicatio
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(() => applicationToForm(application));
 
   useEffect(() => {
     if (open) {
       setForm(applicationToForm(application));
+      setError(null);
     }
   }, [open, application]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     try {
+      const repoUrlChanged = form.repoUrl.trim() !== (application.repoUrl ?? "").trim();
+      if (form.repoUrl.trim() && repoUrlChanged) {
+        const accessError = await checkRepoAccess(form.repoUrl.trim());
+        if (accessError) {
+          setError(accessError);
+          return;
+        }
+      }
+
       const res = await fetch(`/api/applications/${application.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -303,6 +348,8 @@ export function ApplicationEditDialog({ application }: { application: Applicatio
       if (!res.ok) throw new Error("Failed to update");
       setOpen(false);
       router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update");
     } finally {
       setLoading(false);
     }
@@ -320,6 +367,7 @@ export function ApplicationEditDialog({ application }: { application: Applicatio
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <ApplicationFormFields form={form} setForm={setForm} idPrefix="edit" />
+          {error ? <p className="text-destructive text-sm">{error}</p> : null}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Saving..." : "Save changes"}
           </Button>

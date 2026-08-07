@@ -1,7 +1,7 @@
-import { RequestError } from "@octokit/request-error";
 import type { Octokit } from "@octokit/rest";
 import { prisma } from "@/lib/db";
 import { getOctokit } from "@/lib/github/client";
+import { formatGitHubAccessError } from "@/lib/github/errors";
 import { parseRepoUrl } from "@/lib/github/parse-repo-url";
 
 async function countCommitsSince(
@@ -24,27 +24,6 @@ async function countCommitsSince(
   }
 
   return count;
-}
-
-function formatGitHubSyncError(
-  error: unknown,
-  owner: string,
-  repo: string
-): string {
-  if (error instanceof RequestError) {
-    if (error.status === 404) {
-      return `Repository "${owner}/${repo}" was not found. Check the GitHub URL in Edit is correct, the repo exists on GitHub, and your token can access it (private repos need repo scope on the token).`;
-    }
-    if (error.status === 401) {
-      return "GitHub rejected the token. Check that GITHUB_TOKEN in .env.local is valid and not expired, then restart the dev server.";
-    }
-    if (error.status === 403) {
-      return `GitHub denied access to "${owner}/${repo}". The token may lack permissions or the API rate limit was exceeded.`;
-    }
-  }
-
-  if (error instanceof Error) return error.message;
-  return "Sync failed";
 }
 
 export async function syncGitHubMetadata(applicationId: string) {
@@ -87,7 +66,7 @@ export async function syncGitHubMetadata(applicationId: string) {
       countCommitsSince(octokit, owner, repo, new Date(0)),
     ]);
   } catch (error) {
-    throw new Error(formatGitHubSyncError(error, owner, repo));
+    throw new Error(formatGitHubAccessError(error, owner, repo));
   }
 
   const lastCommitAt = repoData.data.pushed_at

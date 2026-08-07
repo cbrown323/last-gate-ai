@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import type { Epic } from "@/types";
-import { Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const EPIC_COLORS = [
@@ -47,6 +47,11 @@ export function RoadmapBoard({
     startsAt: "",
     endsAt: "",
   });
+  const [generating, setGenerating] = useState(false);
+  const [generateResult, setGenerateResult] = useState<{
+    ok: boolean;
+    message: string;
+  } | null>(null);
 
   const timelineStart = epics.reduce((min, e) => {
     if (!e.startsAt) return min;
@@ -88,6 +93,45 @@ export function RoadmapBoard({
     }
   }
 
+  async function generateRoadmap() {
+    setGenerating(true);
+    setGenerateResult(null);
+    try {
+      const res = await fetch("/api/roadmap/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ applicationId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error ?? "Roadmap generation failed");
+      }
+
+      const refreshed = await fetch(`/api/epics?applicationId=${applicationId}`);
+      if (refreshed.ok) {
+        setEpics(await refreshed.json());
+      }
+
+      const modeLabel =
+        data.mode === "ai"
+          ? "AI analysis"
+          : data.aiError
+            ? `offline fallback — AI call failed (${data.aiError})`
+            : "offline fallback — no AI key configured";
+      setGenerateResult({
+        ok: true,
+        message: `Created ${data.epicsCreated} epics and ${data.tasksCreated} tasks via ${modeLabel}. A summary note "${data.noteTitle}" was added to this app's notes; dated items appear on the calendar.`,
+      });
+    } catch (err) {
+      setGenerateResult({
+        ok: false,
+        message: err instanceof Error ? err.message : "Roadmap generation failed",
+      });
+    } finally {
+      setGenerating(false);
+    }
+  }
+
   async function deleteEpic(id: string) {
     const res = await fetch(`/api/epics/${id}`, { method: "DELETE" });
     if (res.ok) {
@@ -108,64 +152,97 @@ export function RoadmapBoard({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-muted-foreground text-sm">
           Plan work in epics with date ranges on the roadmap timeline.
         </p>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger
-            render={
-              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" />
-            }
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void generateRoadmap()}
+            disabled={generating}
           >
-            <Plus className="size-4" />
-            Add epic
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>New epic</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={createEpic} className="space-y-3">
-              <div className="space-y-1">
-                <Label>Name</Label>
-                <Input
-                  required
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label>Description</Label>
-                <Textarea
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
+            {generating ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Analyzing…
+              </>
+            ) : (
+              <>
+                <Sparkles className="size-4" />
+                Generate AI roadmap
+              </>
+            )}
+          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger
+              render={
+                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" />
+              }
+            >
+              <Plus className="size-4" />
+              Add epic
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>New epic</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={createEpic} className="space-y-3">
                 <div className="space-y-1">
-                  <Label>Start</Label>
+                  <Label>Name</Label>
                   <Input
-                    type="date"
-                    value={form.startsAt}
-                    onChange={(e) => setForm({ ...form, startsAt: e.target.value })}
+                    required
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label>End</Label>
-                  <Input
-                    type="date"
-                    value={form.endsAt}
-                    onChange={(e) => setForm({ ...form, endsAt: e.target.value })}
+                  <Label>Description</Label>
+                  <Textarea
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
                   />
                 </div>
-              </div>
-              <Button type="submit" className="w-full">
-                Create epic
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label>Start</Label>
+                    <Input
+                      type="date"
+                      value={form.startsAt}
+                      onChange={(e) => setForm({ ...form, startsAt: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>End</Label>
+                    <Input
+                      type="date"
+                      value={form.endsAt}
+                      onChange={(e) => setForm({ ...form, endsAt: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <Button type="submit" className="w-full">
+                  Create epic
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
+
+      {generateResult ? (
+        <p
+          className={cn(
+            "rounded-md border p-3 text-sm",
+            generateResult.ok
+              ? "border-emerald-200/60 bg-emerald-50/60 text-emerald-800 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-200"
+              : "border-destructive/40 bg-destructive/10 text-destructive"
+          )}
+        >
+          {generateResult.message}
+        </p>
+      ) : null}
 
       {epics.length === 0 ? (
         <Card>

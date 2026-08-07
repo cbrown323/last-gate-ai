@@ -17,9 +17,10 @@ export interface EnvKeyDefinition {
 export const MANAGEABLE_ENV_KEYS: EnvKeyDefinition[] = [
   {
     id: "GITHUB_TOKEN",
-    label: "GitHub token",
-    description: "Personal access token with repo read access for sync and scans.",
-    placeholder: "ghp_…",
+    label: "GitHub Personal Access Token",
+    description:
+      "Grants access to public and private repos you can read. Classic: repo scope. Fine-grained: Contents + Metadata read on your repos.",
+    placeholder: "ghp_… or github_pat_…",
     group: "github",
   },
   {

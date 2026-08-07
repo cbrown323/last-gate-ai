@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   SettingsCategoryBadge,
   settingsCategoryCardClass,
@@ -23,6 +25,8 @@ import {
   CheckCircle2,
   Circle,
   ExternalLink,
+  Eye,
+  EyeOff,
   Loader2,
   Plug,
   RefreshCw,
@@ -73,6 +77,178 @@ function stateBadge(state: IntegrationConnectionState) {
         </Badge>
       );
   }
+}
+
+function GitHubInlineSetup({ onTokenSaved }: { onTokenSaved: () => void }) {
+  const [token, setToken] = useState("");
+  const [tokenVisible, setTokenVisible] = useState(false);
+  const [savingToken, setSavingToken] = useState(false);
+  const [tokenError, setTokenError] = useState<string | null>(null);
+  const [tokenSaved, setTokenSaved] = useState(false);
+
+  const [repoUrl, setRepoUrl] = useState("");
+  const [testingRepo, setTestingRepo] = useState(false);
+  const [repoResult, setRepoResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  async function handleSaveToken() {
+    if (!token.trim()) return;
+    setSavingToken(true);
+    setTokenError(null);
+    setTokenSaved(false);
+    try {
+      const res = await fetch("/api/settings/env-keys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "GITHUB_TOKEN", value: token.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(typeof data.error === "string" ? data.error : "Failed to save token");
+      }
+      setToken("");
+      setTokenVisible(false);
+      setTokenSaved(true);
+      onTokenSaved();
+    } catch (e) {
+      setTokenError(e instanceof Error ? e.message : "Failed to save token");
+    } finally {
+      setSavingToken(false);
+    }
+  }
+
+  async function handleTestRepo() {
+    if (!repoUrl.trim()) return;
+    setTestingRepo(true);
+    setRepoResult(null);
+    try {
+      const res = await fetch("/api/github/verify-repo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ repoUrl: repoUrl.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error("Could not check repository access");
+      }
+      setRepoResult({ ok: Boolean(data.ok), message: data.message ?? "Done" });
+    } catch (e) {
+      setRepoResult({
+        ok: false,
+        message: e instanceof Error ? e.message : "Could not check repository access",
+      });
+    } finally {
+      setTestingRepo(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4 rounded-lg border border-border/60 bg-background/60 p-4">
+      <div className="space-y-2">
+        <Label htmlFor="wizard-github-token" className="text-sm font-medium">
+          Personal Access Token
+        </Label>
+        <p className="text-muted-foreground text-xs">
+          Required to sync public and private repos you have access to. Saves to{" "}
+          <code className="rounded bg-muted px-1">.env.local</code> and is active immediately.
+        </p>
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Input
+              id="wizard-github-token"
+              type={tokenVisible ? "text" : "password"}
+              value={token}
+              onChange={(e) => {
+                setToken(e.target.value);
+                setTokenError(null);
+                setTokenSaved(false);
+              }}
+              placeholder="ghp_… or github_pat_…"
+              autoComplete="off"
+              spellCheck={false}
+              className="pr-9 font-mono text-sm"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              className="absolute top-1/2 right-1 -translate-y-1/2 text-muted-foreground"
+              onClick={() => setTokenVisible((v) => !v)}
+              aria-label={tokenVisible ? "Hide token" : "Show token"}
+            >
+              {tokenVisible ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+            </Button>
+          </div>
+          <Button size="sm" onClick={handleSaveToken} disabled={savingToken || !token.trim()}>
+            {savingToken ? (
+              <>
+                <Loader2 className="mr-1 size-4 animate-spin" />
+                Saving…
+              </>
+            ) : (
+              "Save token"
+            )}
+          </Button>
+        </div>
+        {tokenError ? <p className="text-destructive text-xs">{tokenError}</p> : null}
+        {tokenSaved ? (
+          <p className="text-emerald-700 text-xs dark:text-emerald-300">
+            Token saved and active. Re-checking connection…
+          </p>
+        ) : null}
+      </div>
+
+      <div className="space-y-2 border-t border-border/60 pt-3">
+        <Label htmlFor="wizard-github-repo-test" className="text-sm font-medium">
+          Test repo access
+        </Label>
+        <p className="text-muted-foreground text-xs">
+          Paste a repo URL to confirm your token can reach it — the best way to catch missing
+          scopes or org SSO issues before importing a private repo.
+        </p>
+        <div className="flex gap-2">
+          <Input
+            id="wizard-github-repo-test"
+            value={repoUrl}
+            onChange={(e) => {
+              setRepoUrl(e.target.value);
+              setRepoResult(null);
+            }}
+            placeholder="https://github.com/owner/repo"
+            autoComplete="off"
+            spellCheck={false}
+            className="flex-1 text-sm"
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleTestRepo}
+            disabled={testingRepo || !repoUrl.trim()}
+          >
+            {testingRepo ? (
+              <>
+                <Loader2 className="mr-1 size-4 animate-spin" />
+                Checking…
+              </>
+            ) : (
+              "Test access"
+            )}
+          </Button>
+        </div>
+        {repoResult ? (
+          <p
+            className={cn(
+              "text-xs",
+              repoResult.ok
+                ? "text-emerald-700 dark:text-emerald-300"
+                : "text-destructive"
+            )}
+          >
+            {repoResult.message}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
 }
 
 function IntegrationStepCard({
@@ -131,6 +307,9 @@ function IntegrationStepCard({
         </div>
       </CardHeader>
       <CardContent className={cn("space-y-4", ready && "pt-0")}>
+        {provider.id === "github" ? (
+          <GitHubInlineSetup onTokenSaved={() => onVerify(provider.id)} />
+        ) : null}
         <SettingsExpandableDetails
           label={ready ? "View setup details" : "Setup instructions"}
           header={
