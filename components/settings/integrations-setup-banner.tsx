@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
 import { Plug } from "lucide-react";
 import { isIntegrationConfigured } from "@/lib/integrations/status";

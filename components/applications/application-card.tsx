@@ -8,7 +8,7 @@ import { ApplicationPinButton } from "@/components/applications/application-pin-
 import type { Application } from "@/types";
 import { LIFECYCLE_PHASE_LABELS } from "@/types";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 
 export function ApplicationCard({ application }: { application: Application }) {
   const repoPath = application.repoUrl?.replace("https://github.com/", "");

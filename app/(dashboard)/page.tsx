@@ -4,7 +4,7 @@ import { PortfolioStats } from "@/components/charts/portfolio-stats";
 import { StatusChart } from "@/components/charts/status-chart";
 import { TaskStatusChart, TaskPriorityChart } from "@/components/charts/task-stats";
 import { OverdueTasksCard, TaskActivityCard } from "@/components/charts/task-activity";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import {
   getApplications,
   getPinnedApplications,
@@ -171,10 +171,11 @@ export default async function DashboardPage() {
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <PortfolioIntelligenceRefresh disabled={applications.length === 0} />
-            <Link href="/applications">
-              <Button variant="outline" size="sm">
-                Applications
-              </Button>
+            <Link
+              href="/applications"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              Applications
             </Link>
           </div>
         }
@@ -186,8 +187,8 @@ export default async function DashboardPage() {
           <p className="text-muted-foreground mb-3 text-sm">
             Register an application to see your lifecycle board.
           </p>
-          <Link href="/applications">
-            <Button size="sm">Go to Applications</Button>
+          <Link href="/applications" className={buttonVariants({ size: "sm" })}>
+            Go to Applications
           </Link>
         </div>
       ) : (

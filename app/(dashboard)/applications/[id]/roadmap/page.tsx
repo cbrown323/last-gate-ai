@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { RoadmapBoard } from "@/components/applications/roadmap-board";
 import { serializeEpic } from "@/lib/serialize";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { ArrowLeft } from "lucide-react";
 import { PmViewSwitcher } from "@/components/applications/pm-view-switcher";
 

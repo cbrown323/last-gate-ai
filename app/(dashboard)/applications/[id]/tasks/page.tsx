@@ -7,7 +7,7 @@ import { TasksFocusGuide } from "@/components/applications/tasks-focus-guide";
 import { LifecycleBanner } from "@/components/applications/lifecycle-banner";
 import { serializeEpic, serializeTask } from "@/lib/serialize";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { ArrowLeft } from "lucide-react";
 import { PmViewSwitcher } from "@/components/applications/pm-view-switcher";
 import type { LifecyclePhase, WorkflowType } from "@/types";

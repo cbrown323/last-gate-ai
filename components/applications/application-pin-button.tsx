@@ -64,12 +64,12 @@ export function ApplicationPinButton({
               onClick={toggle}
               disabled={loading}
               aria-label={label}
-            >
-              {pinned ? <PinOff className="size-4" /> : <Pin className="size-4" />}
-              {showLabel ? <span className="ml-1">{pinned ? "Pinned" : "Pin"}</span> : null}
-            </Button>
+            />
           }
-        />
+        >
+          {pinned ? <PinOff className="size-4" /> : <Pin className="size-4" />}
+          {showLabel ? <span className="ml-1">{pinned ? "Pinned" : "Pin"}</span> : null}
+        </TooltipTrigger>
         <TooltipContent>{label}</TooltipContent>
       </Tooltip>
     </TooltipProvider>

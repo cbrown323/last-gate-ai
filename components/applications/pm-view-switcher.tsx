@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Kanban, Map } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 
 export function PmViewSwitcher({
   applicationId,

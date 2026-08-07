@@ -71,11 +71,9 @@ export function ThemeProvider({
   defaultTheme?: ThemeSetting;
   enableSystem?: boolean;
 }) {
-  const [theme, setThemeState] = useState<ThemeSetting>(() =>
-    readStoredTheme(defaultTheme)
-  );
+  const [theme, setThemeState] = useState<ThemeSetting>(defaultTheme);
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
-    resolveTheme(readStoredTheme(defaultTheme))
+    resolveTheme(defaultTheme)
   );
 
   const setTheme = useCallback(
@@ -86,6 +84,10 @@ export function ThemeProvider({
     },
     [defaultTheme, enableSystem]
   );
+
+  useLayoutEffect(() => {
+    setThemeState(readStoredTheme(defaultTheme));
+  }, [defaultTheme]);
 
   useLayoutEffect(() => {
     const resolved = resolveTheme(theme);
