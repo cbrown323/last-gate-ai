@@ -12,7 +12,7 @@ export default async function NotesPage({
 }) {
   const params = await searchParams;
 
-  // Obsidian-style: clicking an unresolved [[wikilink]] creates the note in the current vault.
+  // Clicking an unresolved [[wikilink]] creates a note with that title in the current vault.
   if (params.new) {
     const applicationId =
       params.app && params.app !== "workspace" ? params.app : null;
@@ -37,7 +37,7 @@ export default async function NotesPage({
       <div className="shrink-0">
         <PageHeader
           title="Notes"
-          description="Obsidian-style knowledge base — organize notes by project vault or keep standalone workspace notes, link with [[wikilinks]], and follow backlinks."
+          description="Type [[Note title]] in a note to link to another note. Click a link to open it; if that title does not exist yet, a new note is created in the current vault."
         />
       </div>
       <Suspense

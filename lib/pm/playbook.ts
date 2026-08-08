@@ -57,11 +57,34 @@ export interface PlaybookSection {
   id: string;
   title: string;
   summary: string;
+  /** Why this methodology or practice is a default choice, not just what it is. */
+  whyChoose?: string;
+  /** How and why this fits a solo operator or small team without enterprise ceremony. */
+  soloTeamFit?: string[];
   principles: string[];
   practices: string[];
   antiPatterns: string[];
   platformTip: string;
 }
+
+/** When to pick Kanban vs Scrum. Used on the playbook page and in planning-phase guidance. */
+export const WORKFLOW_CHOICE_GUIDANCE: {
+  kanban: { when: string; why: string };
+  scrum: { when: string; why: string };
+} = {
+  kanban: {
+    when:
+      "Ongoing work with no fixed end date: maintenance, side projects, portfolio apps, or steady feature flow.",
+    why:
+      "You optimize for flow and review bandwidth, not sprint deadlines. WIP limits keep a solo builder or two-person team from drowning in parallel work.",
+  },
+  scrum: {
+    when:
+      "A bounded push with a deadline: launch week, a v2 release, or a client milestone you need to forecast.",
+    why:
+      "Time-boxing forces scope tradeoffs early. Epics and sprint goals give a small team a shared finish line without daily standups or a Scrum Master.",
+  },
+};
 
 export const PLAYBOOK_SECTIONS: PlaybookSection[] = [
   {
@@ -91,10 +114,51 @@ export const PLAYBOOK_SECTIONS: PlaybookSection[] = [
       "Set lifecycle phase on each application. The playbook banner on the app detail page shows phase-specific next steps.",
   },
   {
+    id: "methodology-fundamentals",
+    title: "Kanban & Scrum: methodology fundamentals",
+    summary:
+      "Last Gate is built on two proven frameworks, not a bespoke process and not enterprise ceremony. Both use the same board, backlog, epics, and dashboard; you choose the rhythm that matches how you actually work.",
+    whyChoose:
+      "Waterfall assumes you know the full spec upfront. SAFe and scaled Agile assume many teams and release trains. Solo builders and small teams need something lighter: visualize work, limit overload, ship in small batches, and inspect what actually landed. Kanban and Scrum are the industry defaults because they do exactly that, and every other 'methodology' in this playbook (prioritization, AI ops, delivery) plugs into one of them.",
+    soloTeamFit: [
+      "One person wearing PM, dev, and QA hats still benefits from WIP limits and a visible board. You are the whole team, so overload shows up fast.",
+      "A two- to four-person team does not need standups, story points, or a Scrum Master. Pick Kanban for steady flow or Scrum when you need a dated milestone; skip the rest.",
+      "You can run Kanban on three portfolio apps and Scrum on one launch push. Workflow type is per application, not one process for everything.",
+      "Agents amplify output; Kanban/Scrum keep review and shipping honest so parallel AI work does not become an unreviewed pile.",
+    ],
+    principles: [
+      "Same primitives everywhere: backlog, board columns, priorities, epics, and Done means deployed, not just merged.",
+      "Process weight scales with team size: solo = WIP limit + weekly groom; small team = add sprint dates on the Roadmap.",
+      "Choose per app, not once for life. Maintenance is Kanban; a launch crunch can switch to Scrum for that app.",
+      "Fundamentals before tooling: if the board is empty or everything is Critical, no methodology saves you. Fix hygiene first.",
+    ],
+    practices: [
+      "During Planning phase, pick Kanban (continuous flow) or Scrum (time-boxed push) and set workflow type on the application.",
+      "Start with Kanban unless you have a hard deadline. It is the default and the lowest ceremony.",
+      "When a deadline appears, switch to Scrum: create an epic with start/end dates on the Roadmap and scope the sprint backlog from the board.",
+      "Revisit the choice when lifecycle phase changes. Growth and Maintenance almost always stay Kanban; Launch often benefits from Scrum.",
+    ],
+    antiPatterns: [
+      "Copying a big-company playbook (PI planning, velocity poker, daily standups) for a side project you touch twice a week.",
+      "Refusing to pick a methodology and managing work in your head or scattered notes.",
+      "Switching between Kanban and Scrum every week without a reason. Stick to one rhythm per app for at least a month.",
+    ],
+    platformTip:
+      "Set workflow type in application settings (Kanban or Scrum). The lifecycle banner shows your choice; the board and Roadmap work the same either way. Scrum adds epic dates and sprint-style planning on top.",
+  },
+  {
     id: "kanban",
     title: "Kanban workflow",
     summary:
-      "Visualize work, limit work in progress, and optimize flow. The board is your daily command center, and now that agents can build in parallel, your review bandwidth is the real constraint.",
+      "Visualize work, limit work in progress, and optimize flow. The board is your daily command center: pull the next highest-value task when you have capacity, not when someone assigns it.",
+    whyChoose:
+      "Kanban is the default because most solo and small-team work is continuous, not project-shaped. You do not need sprint boundaries to ship; you need visibility into what is waiting, what is active, and what is stuck. Kanban makes overload obvious (too many In Progress) and finished work undeniable (Done column). With AI agents building in parallel, your review bandwidth (not build speed) is the bottleneck; WIP limits encode that reality.",
+    soloTeamFit: [
+      "Solo: treat the board as your external memory. Backlog holds ideas; To Do is this week; In Progress is what you (or an agent) are actively on. Cap at 2–3.",
+      "Small team: no assignee meetings required. Columns and priorities communicate state; GitHub issue links in Reference keep async handoffs traceable.",
+      "Portfolio mode: each app gets its own WIP limit so one hot project does not starve the rest.",
+      "Low ceremony: drag cards daily (or when context-switching). No sprint planning meeting; just pull when Done frees a slot.",
+    ],
     principles: [
       "Visualize all work on the board (Backlog → To Do → In Progress → Done).",
       "Limit WIP to what you can actually review and verify. Default limit is 3 tasks per app.",
@@ -106,38 +170,51 @@ export const PLAYBOOK_SECTIONS: PlaybookSection[] = [
       "Use priorities (Low → Critical) and due dates on every actionable task.",
       "Link GitHub issues via Reference field for traceability.",
       "Write tasks with acceptance criteria so an agent can pick them up cold.",
+      "When In Progress hits the WIP limit, finish or park something before starting new work, including agent-generated PRs.",
     ],
     antiPatterns: [
       "10+ items in In Progress. Even with agents building in parallel, unreviewed work is not done.",
       "Moving to Done without a definition of done.",
       "Using the board as a wish list with no owners or dates.",
+      "Disabling or ignoring WIP warnings because you feel productive with many open threads.",
     ],
     platformTip:
-      "The In Progress column highlights when you exceed the WIP limit. Use tags like `bug`, `feature`, `chore` for filtering.",
+      "The In Progress column highlights when you exceed the WIP limit. Use tags like `bug`, `feature`, `chore` for filtering. Kanban is the default workflow type for new applications.",
   },
   {
     id: "scrum",
     title: "Scrum basics",
     summary:
-      "Time-boxed iterations with epics and a roadmap. Suited when you need a predictable delivery cadence or a hard deadline.",
+      "Time-boxed iterations with epics and a roadmap. Use when you need a predictable delivery cadence, a stakeholder commit date, or a forced scope conversation before a launch.",
+    whyChoose:
+      "Scrum earns its place when the question is 'what will ship by date X?' rather than 'what should we work on next?' Sprints (1–2 weeks) create a natural checkpoint: plan a slice, build it, review what landed, adjust. You keep only the parts that work for small teams (backlog order, sprint goal, epic timeline) and drop the enterprise rituals.",
+    soloTeamFit: [
+      "Solo launch push: one epic on the Roadmap with an end date, 1–2 week slices, Friday retro against dashboard velocity. No daily standup with yourself.",
+      "Small team: epic owner + task breakdown replaces sprint poker; estimation hours on tasks are enough for capacity sanity checks.",
+      "Async-friendly: sprint planning is ordering the top of the backlog and dating the epic; review is comparing Done tasks to the sprint goal on the dashboard.",
+      "Switch back to Kanban after the milestone. Scrum is for bounded pushes, not permanent overhead.",
+    ],
     principles: [
       "Work in sprints (1 to 2 weeks) with a clear sprint goal tied to an epic.",
       "Product backlog ordered by value; sprint backlog is a commitment.",
       "Inspect and adapt: review what shipped versus what was planned.",
+      "Time-box scope, not quality. If the sprint is overloaded, defer tasks back to Backlog instead of cutting corners.",
     ],
     practices: [
       "Set workflow type to Scrum on the application.",
       "Create epics on the Roadmap with start and end dates.",
       "Assign tasks to epics; use estimation hours to track capacity.",
-      "Run a lightweight retro from dashboard stats: what shipped, what slipped, what to change.",
+      "At sprint start: move the top N tasks to To Do; keep In Progress within WIP limit during the sprint.",
+      "At sprint end: run a lightweight retro from dashboard stats: what shipped, what slipped, what to change next sprint.",
     ],
     antiPatterns: [
       "Ceremony theater without shipping software.",
       "Epics with no dates. They become invisible work.",
       "Changing sprint scope daily without reprioritizing the backlog.",
+      "Running Scrum indefinitely on maintenance work instead of switching back to Kanban after the deadline.",
     ],
     platformTip:
-      "Use the Roadmap page for epic timelines. Kanban suits ongoing maintenance; Scrum suits feature pushes with deadlines.",
+      "Use the Roadmap page for epic timelines. Kanban suits ongoing maintenance; Scrum suits feature pushes with deadlines. The board columns are identical; Scrum adds planning rhythm via epics and dates, not different columns.",
   },
   {
     id: "prioritization",
@@ -250,7 +327,8 @@ export function getPhaseGuidance(phase: LifecyclePhase): string[] {
     planning: [
       "Create epics on the Roadmap with target dates.",
       "Break epics into tasks with estimates and priorities.",
-      "Choose Kanban (flow) or Scrum (sprints) workflow type.",
+      "Choose Kanban (continuous flow) or Scrum (time-boxed push). See PM Playbook methodology fundamentals.",
+      "Default to Kanban unless you have a hard deadline; set workflow type on the application.",
     ],
     development: [
       "Keep In Progress under the WIP limit.",

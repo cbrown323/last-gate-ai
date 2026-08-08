@@ -43,5 +43,7 @@ next-env.d.ts
 # prisma generated (regenerate with npx prisma generate)
 # Keep generated client for builds — do not gitignore
 
-# local agent workflow docs (not part of the product)
-/workflow_guide/
+# local sqlite database (dev only)
+dev.db
+dev.db-journal
+

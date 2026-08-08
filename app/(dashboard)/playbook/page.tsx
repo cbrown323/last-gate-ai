@@ -2,9 +2,9 @@ import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PLAYBOOK_SECTIONS, getPhaseGuidance, LIFECYCLE_PHASES, LIFECYCLE_PHASE_DESCRIPTIONS } from "@/lib/pm/playbook";
-import { LIFECYCLE_PHASE_LABELS } from "@/types";
-import { BookOpen, CheckCircle2, XCircle } from "lucide-react";
+import { PLAYBOOK_SECTIONS, getPhaseGuidance, LIFECYCLE_PHASES, LIFECYCLE_PHASE_DESCRIPTIONS, WORKFLOW_CHOICE_GUIDANCE } from "@/lib/pm/playbook";
+import { LIFECYCLE_PHASE_LABELS, WORKFLOW_TYPE_LABELS } from "@/types";
+import { BookOpen, CheckCircle2, XCircle, GitBranch, Users } from "lucide-react";
 
 export default function PlaybookPage() {
   return (
@@ -24,10 +24,11 @@ export default function PlaybookPage() {
         <CardContent className="text-muted-foreground space-y-2 text-sm">
           <p>
             Most people manage software without formal PM training. Last Gate brings together
-            proven PM patterns (visual flow, WIP limits, dashboards, epics, roadmaps) with
-            portfolio intelligence unique to this platform. It also folds in the current playbook
-            from AI-era product and project managers: delegate the structured middle to agents,
-            keep judgment human, and measure AI features with evals instead of vibes.
+            proven PM patterns: <strong className="text-foreground">Kanban and Scrum</strong> as
+            the methodology fundamentals, plus visual flow, WIP limits, dashboards, epics, and
+            roadmaps, with portfolio intelligence unique to this platform. It also folds in the
+            current playbook from AI-era product and project managers: delegate the structured middle
+            to agents, keep judgment human, and measure AI features with evals instead of vibes.
           </p>
           <p>
             Set a <strong className="text-foreground">lifecycle phase</strong> on each application.
@@ -61,6 +62,34 @@ export default function PlaybookPage() {
       </div>
 
       <div>
+        <h2 className="mb-4 text-lg font-semibold">Methodology fundamentals</h2>
+        <p className="text-muted-foreground mb-4 max-w-3xl text-sm">
+          Kanban and Scrum are the two frameworks Last Gate is built around, not a custom process
+          and not scaled Agile. Both share the same board, backlog, and Roadmap; you pick the rhythm
+          that fits a solo operator or a small team.
+        </p>
+        <div className="mb-6 grid gap-3 md:grid-cols-2">
+          {(["kanban", "scrum"] as const).map((type) => (
+            <Card key={type} className="border-emerald-200/40">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">{WORKFLOW_TYPE_LABELS[type]}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <div>
+                  <p className="font-medium">When to use</p>
+                  <p className="text-muted-foreground">{WORKFLOW_CHOICE_GUIDANCE[type].when}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Why it fits small teams</p>
+                  <p className="text-muted-foreground">{WORKFLOW_CHOICE_GUIDANCE[type].why}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div>
         <h2 className="mb-4 text-lg font-semibold">Methodologies & practices</h2>
         <div className="space-y-4">
           {PLAYBOOK_SECTIONS.filter((s) => s.id !== "product-lifecycle").map((section) => (
@@ -68,8 +97,30 @@ export default function PlaybookPage() {
               <CardHeader>
                 <CardTitle className="text-base">{section.title}</CardTitle>
                 <p className="text-muted-foreground text-sm">{section.summary}</p>
+                {section.whyChoose ? (
+                  <p className="text-sm">
+                    <span className="font-medium">Why this methodology: </span>
+                    <span className="text-muted-foreground">{section.whyChoose}</span>
+                  </p>
+                ) : null}
               </CardHeader>
               <CardContent className="grid gap-4 md:grid-cols-3 text-sm">
+                {section.soloTeamFit && section.soloTeamFit.length > 0 ? (
+                  <div className="md:col-span-3 rounded-md border border-sky-200/60 bg-sky-50/30 p-3 dark:border-sky-900/40 dark:bg-sky-950/20">
+                    <p className="mb-2 flex items-center gap-1.5 font-medium">
+                      <Users className="size-3.5 text-sky-600" />
+                      Solo operator & small team
+                    </p>
+                    <ul className="space-y-1">
+                      {section.soloTeamFit.map((item, i) => (
+                        <li key={i} className="text-muted-foreground flex gap-2">
+                          <GitBranch className="mt-0.5 size-3 shrink-0 text-sky-600" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
                 <div>
                   <p className="mb-2 font-medium">Principles</p>
                   <ul className="space-y-1">
