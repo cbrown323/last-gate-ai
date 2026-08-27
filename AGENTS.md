@@ -1,34 +1,35 @@
 # Last Gate AI — agent instructions
 
-Next.js App Router + TypeScript + shadcn/ui under `app/`, `components/`, `lib/`. Shared types in `types/`. Database via Prisma (`prisma/schema.prisma`). Verify every path with search before editing — do not assume a Vite or Laravel layout.
+Last Gate AI is a Next.js 16 App Router application using TypeScript, React 19, Tailwind CSS 4, shadcn/ui, Prisma 7, and SQLite for local development. Verify paths with `rg --files` before editing; do not assume a Vite, Pages Router, Laravel, or Bootstrap layout.
 
-## Stack
+## Project layout
 
-- **UI:** shadcn/ui + Tailwind CSS. Use existing `components/ui/*` before custom CSS.
-- **Database:** Prisma + SQLite (dev). Schema in `prisma/schema.prisma`; client via `lib/db.ts`.
-- **Server routes:** `app/api/**/route.ts` — Route Handlers, not Pages API.
-- **Do not** introduce Laravel, Bootstrap 4, or jQuery unless explicitly requested.
+- `app/`: App Router pages, layouts, and API Route Handlers.
+- `components/`: UI and feature components; reuse `components/ui/*` before adding primitives.
+- `lib/`: shared utilities, integrations, domain workflows, and the generated Prisma client.
+- `types/`: shared TypeScript types.
+- `prisma/schema.prisma`: database schema; migrations live in `prisma/migrations/`.
+- `scripts/`: setup, database backup/restore, and maintenance scripts.
+- `docs/`: versioned documentation. `workflow_guide/` is local-only and ignored by Git.
 
-## Path discipline
+## Implementation rules
 
-- Verify paths exist before editing or `@`-mentioning them.
-- Prefer `app/api/` for server routes, `lib/` for shared utilities, `components/ui/` for shadcn primitives.
-- If a new file is required, prefix it with `NEW:` in the plan and place it under the existing structure.
+- Keep changes surgical and match existing naming, formatting, and shadcn conventions.
+- Prefer Server Components; use `"use client"` only for hooks, browser APIs, or interactive client state.
+- Add server endpoints under `app/api/**/route.ts`, using proper HTTP status codes and user-friendly errors.
+- Put reusable business logic in `lib/`, not directly in page or route files.
+- Use the existing Prisma client from `lib/db.ts`; update the schema and migration workflow together when changing persistence.
+- Do not add dependencies, ORMs, chart libraries, Laravel, Bootstrap, or jQuery without explicit approval.
+- If a new file is required, identify it as `NEW:` in the plan and place it under the existing project structure.
 
-## Editing rules
+## Integrations and secrets
 
-- Surgical changes only — no unrelated refactors.
-- Match existing naming, file layout, and shadcn conventions.
-- No new dependencies without permission (AI SDKs, ORMs, heavy chart libraries).
-- Server Components by default; `"use client"` only when hooks or browser APIs are needed.
+- GitHub access uses `@octokit/rest`/fetch with `GITHUB_TOKEN` from the environment. Never commit or expose tokens.
+- AI features use the Vercel AI SDK and must be gated by `AI_GATEWAY_API_KEY` or the configured provider key.
+- Keep secrets in `.env.local`; never log them or send them to client components. `.env.example` may contain names and safe placeholders only.
 
-## Integrations
+## Verification
 
-- **GitHub:** `@octokit/rest` or fetch with `GITHUB_TOKEN` from env. Never commit tokens.
-- **AI:** Vercel AI SDK (`ai` package). Gate on `AI_GATEWAY_API_KEY` or provider key in env.
-- **Errors:** Proper HTTP status codes from Route Handlers; user-friendly messages in UI.
-- **Secrets:** `.env.local` is gitignored — never log or expose tokens to the client.
-
-## When you finish a task
-
-Report changed files, what you tested, and any known limitations blocked on env vars.
+- Run `npm run lint` after code changes. Run `npm run build` for changes affecting routes, Prisma, configuration, or production behavior.
+- Check `git diff` and `git status --short` before finishing; do not include local databases, backups, generated build output, or `workflow_guide/`.
+- Report changed files, tests run, and any limitations caused by missing environment variables.

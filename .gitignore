@@ -52,3 +52,6 @@ next-env.d.ts
 *.db-wal
 /data/
 /backups/
+
+# Local workflow notes and prompts; keep out of version control
+/workflow_guide/
