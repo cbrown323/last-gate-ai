@@ -225,9 +225,9 @@ export function buildLifecycleWorkflow(alert: LifecycleVelocityAlert): MetricWor
             "Open the lifecycle panel and confirm whether this phase's goals are met, blocked, or no longer relevant.",
         },
         {
-          title: "Advance or reset the phase",
+          title: "Advance the phase when ready",
           description:
-            "Move to the next lifecycle phase when ready, or reset the phase start date after a documented review.",
+            "Move to the next lifecycle phase when exit criteria are met. Elapsed timing is kept across phase changes.",
         },
         {
           title: "Align the board with the decision",
@@ -256,7 +256,7 @@ export function buildLifecycleWorkflow(alert: LifecycleVelocityAlert): MetricWor
       {
         title: "Document the review outcome",
         description:
-          "Either advance to the next phase or reset the phase timer after confirming the plan.",
+          "Advance to the next phase when ready. Elapsed lifecycle timing is preserved when you switch phases.",
       },
       {
         title: "Clear related health flags",
@@ -353,8 +353,9 @@ export const APPLICATION_FOCUS_GUIDES: Record<
         description: "Compare days in phase against the playbook's recommended window.",
       },
       {
-        title: "Advance or reset the phase",
-        description: "Move forward when exit criteria are met, or reset the timer after a review.",
+        title: "Advance the phase when ready",
+        description:
+          "Move forward when exit criteria are met. Elapsed timing stays put across phase changes.",
       },
       {
         title: "Update tasks to match",

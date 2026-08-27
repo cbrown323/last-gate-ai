@@ -61,13 +61,6 @@ export async function PUT(
 
   const data = parsed.data;
 
-  const existing = data.lifecyclePhase !== undefined
-    ? await prisma.application.findUnique({
-        where: { id },
-        select: { lifecyclePhase: true },
-      })
-    : null;
-
   const application = await prisma.application.update({
     where: { id },
     data: {
@@ -77,11 +70,10 @@ export async function PUT(
       ...(data.repoUrl !== undefined && { repoUrl: data.repoUrl || null }),
       ...(data.websiteUrl !== undefined && { websiteUrl: data.websiteUrl || null }),
       ...(data.owner !== undefined && { owner: data.owner || null }),
+      // Keep lifecyclePhaseStartedAt when the phase changes so elapsed
+      // timing is preserved across manual switches / advances.
       ...(data.lifecyclePhase !== undefined && {
         lifecyclePhase: data.lifecyclePhase,
-        ...(existing && existing.lifecyclePhase !== data.lifecyclePhase
-          ? { lifecyclePhaseStartedAt: new Date() }
-          : {}),
       }),
       ...(data.workflowType !== undefined && { workflowType: data.workflowType }),
       ...(data.ticketPrefix !== undefined && { ticketPrefix: data.ticketPrefix || null }),

@@ -1,10 +1,42 @@
 # Last Gate AI
 
-One dashboard for all your software projects — track tasks, sync GitHub repos, and run health checks without switching tabs.
+**The project intelligence dashboard for solo developers and small software portfolios.**
 
-## Run the app
+Bring repositories, tasks, delivery signals, and project health into one place. Last Gate AI syncs your GitHub projects, turns repository activity into an actionable portfolio view, and runs a guided intelligence pipeline across every application you maintain.
+
+![Last Gate AI portfolio dashboard](public/screenshots/portfolio-dashboard.png)
+
+## See the whole portfolio. Know what needs attention.
+
+Last Gate AI is built for the moment when one project becomes five and keeping the state of each one in your head stops working.
+
+- **Portfolio command center** — lifecycle stage, open work, velocity, effort, and attention signals at a glance
+- **GitHub-aware application registry** — import repositories and keep commit, issue, stack, and deployment data in sync
+- **Guided project intelligence** — run git sync, stack detection, architecture mapping, AI summary, security, headroom, and deployment checks as one pipeline
+- **Built-in delivery workflow** — Kanban boards, roadmaps, priorities, due dates, notes, and calendar views for every application
+- **Useful without an AI key** — core tracking and GitHub intelligence work without a model provider; summaries fall back to an offline template
+
+## Project intelligence in one run
+
+Run the complete analysis pipeline from an application's overview, then inspect each result in detail from the Intelligence tab.
+
+![Last Gate AI guided project intelligence](public/screenshots/project-intelligence.png)
+
+<!-- Add the 30-second intelligence-run GIF here when it is available. -->
+
+## Quick start
+
+### Requirements
+
+- Node.js 20+
+- npm
+- A GitHub personal access token for repository sync
+
+### Run locally
 
 ```bash
+git clone https://github.com/cbrown323/last-gate-ai.git
+cd last-gate-ai
 npm install
 npx prisma migrate dev
 npm run dev
@@ -12,52 +44,47 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-Add a `.env.local` file (or use **Settings → API keys** in the app):
+Create `.env.local`, or add keys through **Settings → API keys** in the app:
 
 ```bash
-GITHUB_TOKEN=ghp_...                    # required for repo sync
-AI_GATEWAY_API_KEY=...                  # optional — live AI summaries
+GITHUB_TOKEN=ghp_...       # required for GitHub sync
+AI_GATEWAY_API_KEY=...     # optional: enables live AI summaries
 ```
 
-Restart the dev server after changing keys.
+Restart the development server after changing environment variables.
 
-## How to use it
+## From empty dashboard to useful signal
 
-### 1. Connect integrations
+1. Open **Settings** and connect GitHub. AI, Vercel, and Railway are optional.
+2. Go to **Applications → Import from GitHub** and choose a repository.
+3. Open the application and run **Full analysis** to populate its intelligence.
+4. Use the portfolio dashboard to find stale projects, overdue work, and lifecycle bottlenecks.
+5. Move between **Board** and **Roadmap** to plan and execute the next work.
 
-Go to **Settings** and walk through the wizard:
+## Intelligence pipeline
 
-1. **GitHub** — sync repos, scan stack, detect deployments
-2. **AI** — optional; powers summaries and analysis agents
-3. **Vercel / Railway** — optional deployment tracking
+| Step | What it adds |
+| --- | --- |
+| Git | Repository activity, commit statistics, and issue signals |
+| Stack | Framework, language, and dependency detection |
+| Architecture | A map of the application's structure |
+| Summary | AI-generated or offline project summary |
+| Security | Repository-level security findings and recommendations |
+| Headroom | Maintainability and growth constraints |
+| Deployments | Vercel and Railway deployment visibility |
 
-Click **Verify** on each step to confirm it works.
+## Stack
 
-### 2. Add your first application
+- Next.js App Router, React, and TypeScript
+- shadcn/ui and Tailwind CSS
+- Prisma with SQLite for local development
+- Vercel AI SDK for optional AI summaries
+- GitHub API integration through Octokit
 
-**Applications → Import from GitHub** or register manually with a repo URL.
+## Configuration
 
-Open the app and hit **Sync now** on the Overview tab to pull git stats.
+See [`.env.example`](.env.example) for all supported environment variables. Tokens belong in `.env.local`; never expose them to the client or commit them.
 
-### 3. Use the dashboard
+## License
 
-The home page shows your whole portfolio at a glance:
-
-- **Needs attention** — stale repos, missing sync, overdue tasks
-- **Work in flight** — jump to any app's board or roadmap
-- **Refresh intelligence** — re-analyze all linked repos
-
-### 4. Manage tasks
-
-Each app has a Kanban board (**Backlog → In progress → Done**) with priorities and due dates.
-
-Use the **Board | Roadmap** switcher in the app header. Overdue tasks on the dashboard link straight to the task.
-
-### 5. Run intelligence
-
-On any application, open the **Intelligence** tab:
-
-- **Run full analysis** — stack, architecture, AI summary, security, headroom, and deployments in one go
-- Or run each step individually from the sub-tabs
-
-Without an AI key, summaries use an offline template; everything else still works with GitHub connected.
+Licensed under the [Apache License 2.0](LICENSE). You can use, modify, and distribute Last Gate AI, with the license's attribution and notice requirements.

@@ -114,8 +114,8 @@ export function LifecycleBanner({
           </div>
           <p className="text-muted-foreground text-xs leading-relaxed">{timing.message}</p>
           <p className="text-muted-foreground mt-2 text-[11px]">
+            Timing counts from when this product lifecycle started and is kept when you change phases.
             Velocity and effort on the portfolio dashboard factor into whether this phase should advance.
-            Sync GitHub commits and complete board tasks for accurate signals.
           </p>
         </div>
         <ul className="space-y-1">
