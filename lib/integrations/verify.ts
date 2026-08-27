@@ -1,3 +1,4 @@
+import "server-only";
 import { generateText } from "ai";
 import { getOctokit } from "@/lib/github/client";
 import { getAiConfig } from "@/lib/ai/config";

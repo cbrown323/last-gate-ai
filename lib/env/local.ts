@@ -1,3 +1,4 @@
+import "server-only";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { EnvKeyId } from "@/lib/env/keys";

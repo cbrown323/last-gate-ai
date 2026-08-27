@@ -1,3 +1,4 @@
+import "server-only";
 import { getAiConfig } from "@/lib/ai/config";
 import type {
   IntegrationConnectionState,

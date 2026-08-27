@@ -141,7 +141,7 @@ export async function runSecurityAgent(
     ];
   }
 
-  let score = scoreFromFindings(findings);
+  const score = scoreFromFindings(findings);
   let summary = buildOfflineSummary(findings, score);
   let mode: "ai" | "offline" = "offline";
 

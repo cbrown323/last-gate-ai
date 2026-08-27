@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -43,7 +44,11 @@ next-env.d.ts
 # prisma generated (regenerate with npx prisma generate)
 # Keep generated client for builds — do not gitignore
 
-# local sqlite database (dev only)
-dev.db
-dev.db-journal
-
+# local SQLite databases and operational backups
+*.db
+*.db.*
+*.db-journal
+*.db-shm
+*.db-wal
+/data/
+/backups/

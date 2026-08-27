@@ -1,3 +1,5 @@
+import "server-only";
+
 export type AiProvider = "gateway" | "openai";
 
 export type AiConfig = {

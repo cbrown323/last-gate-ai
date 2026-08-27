@@ -1,3 +1,4 @@
+import "server-only";
 import { Octokit } from "@octokit/rest";
 
 export function getOctokit(): Octokit | null {
